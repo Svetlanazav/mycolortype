@@ -1,0 +1,109 @@
+---
+
+---
+
+<div class="wrapper">
+  <div>
+    <div class="container container--fluid container--xl">
+
+      <div class="container container--s">
+
+        <!-- Page Title -->
+        <div class="page-title">
+          <h1>Image picker</h1>
+          <div>Extract beautiful palettes from your photos.</div>
+        </div>
+
+      </div>
+
+      <div id="image-picker" style="display: flex;">
+
+        <!-- Controls -->
+        <div id="image-picker_controls">
+
+          <div id="image-picker_controls_top">
+          
+            <div class="row row--large-padding _m-b-3">
+              <div class="col col--12">
+                <div class="input-group _m-b-0">
+                  <label for="image-picker_palette-index">Picked palettes</label>
+                  <div class="input-range"><input type="text" id="image-picker_palette-index" min="0" max="39" step="1"><div class="input-range_track"><div class="input-range_active" style="width: 58px;"></div></div><div class="input-range_cursor" style="width: 16px; height: 16px; transform: translate3d(49.8462px, -50%, 0px);"><span></span></div></div>
+                </div>
+              </div>
+              <div class="col col--12">
+                <div class="input-group _m-b-0">
+                  <label for="image-picker_palette">Palette</label>
+                  <div id="image-picker_palette"><div class="palette-selector has-btns is-selectable is-sortable" data-colors="5">        <div class="palette-selector_colors"><div data-index="0" class="is-light is-visible is-active" style="background-color: rgb(216, 159, 204); color: rgb(216, 159, 204);"><span>#D89FCC</span><i></i><u></u></div><div data-index="1" class="is-visible" style="background-color: rgb(29, 16, 28); color: rgb(29, 16, 28);"><span>#1D101C</span><i></i><u></u></div><div data-index="2" class="is-visible" style="background-color: rgb(39, 40, 61); color: rgb(39, 40, 61);"><span>#27283D</span><i></i><u></u></div><div data-index="3" class="is-visible" style="background-color: rgb(95, 44, 41); color: rgb(95, 44, 41);"><span>#5F2C29</span><i></i><u></u></div><div data-index="4" class="is-visible" style="background-color: rgb(20, 14, 27); color: rgb(20, 14, 27);"><span>#140E1B</span><i></i><u></u></div><div data-index="5"><span></span><i></i><u></u></div><div data-index="6"><span></span><i></i><u></u></div><div data-index="7"><span></span><i></i><u></u></div><div data-index="8"><span></span><i></i><u></u></div><div data-index="9"><span></span><i></i><u></u></div></div>        <div class="palette-selector_buttons">          <a><i class="icon icon-add-12px"></i></a>          <a class=""><i class="icon icon-delete-12px"></i></a>        </div>      </div></div>
+                </div>
+              </div>
+              
+            </div>
+
+          </div>
+
+          <div id="image-picker_controls_bottom">
+
+            <div class="row row--small-padding">
+              <div class="col col--12 col--12--l">
+                <div class="btn btn--secondary btn--m btn--with-icon btn--with-icon-center" id="image-picker_browse-btn">
+                  <span>Browse image</span>
+                  <i class="icon icon-image-24px"></i>
+                </div>
+              </div>
+              <div class="col col--12 col--12--l">
+                <div class="btn-compound">
+                  <div class="btn btn--primary btn--m" id="image-picker_export-btn">Export palette</div>
+                  <div class="btn btn--primary btn--m btn--icon" id="image-picker_export-more-btn"><i class="icon icon-down-arrow-16px"></i></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Image -->
+        <div id="image-picker_image-container">
+          <div id="image-picker_image-element">
+            <div id="image-picker_cursors" class=""><div class="image-picker_cursor is-hover is-active" style="top: 38.6252px; left: 344.977px;">
+          <div style="background: rgb(216, 159, 204); border-color: rgb(216, 159, 204);"></div>
+          <span><canvas width="11" height="11"></canvas></span>
+        </div><div class="image-picker_cursor is-hover" style="top: 292.36px; left: 91.7px;">
+          <div style="background: rgb(29, 16, 28); border-color: rgb(29, 16, 28);"></div>
+          <span><canvas width="11" height="11"></canvas></span>
+        </div><div class="image-picker_cursor is-hover" style="top: 294.461px; left: 370.333px;">
+          <div style="background: rgb(39, 40, 61); border-color: rgb(39, 40, 61);"></div>
+          <span><canvas width="11" height="11"></canvas></span>
+        </div><div class="image-picker_cursor is-hover" style="top: 199.412px; left: 256.908px;">
+          <div style="background: rgb(95, 44, 41); border-color: rgb(95, 44, 41);"></div>
+          <span><canvas width="11" height="11"></canvas></span>
+        </div><div class="image-picker_cursor is-hover" style="top: 258.907px; left: 17.025px;">
+          <div style="background: rgb(20, 14, 27); border-color: rgb(20, 14, 27);"></div>
+          <span><canvas width="11" height="11"></canvas></span>
+        </div><div class="image-picker_cursor is-hidden">
+          <div></div>
+          <span><canvas width="11" height="11"></canvas></span>
+        </div><div class="image-picker_cursor is-hidden">
+          <div></div>
+          <span><canvas width="11" height="11"></canvas></span>
+        </div><div class="image-picker_cursor is-hidden">
+          <div></div>
+          <span><canvas width="11" height="11"></canvas></span>
+        </div><div class="image-picker_cursor is-hidden">
+          <div></div>
+          <span><canvas width="11" height="11"></canvas></span>
+        </div><div class="image-picker_cursor is-hidden">
+          <div></div>
+          <span><canvas width="11" height="11"></canvas></span>
+        </div></div>
+            <canvas id="image-picker_image_canvas" style="display: block; width: 515px; height: 386px;" width="1030" height="772"></canvas>
+            <div id="image-picker_image-credits" class="is-visible" data-tooltip="Image by Kevin Lanceplaine via Unsplash"></div>
+          </div>
+        </div>
+      </div>  
+      
+    </div>
+
+  </div>
+</div>
+
