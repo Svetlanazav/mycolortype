@@ -12,7 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ImageSegmenter, FilesetResolver } from "@mediapipe/tasks-vision";
+import {
+  ImageSegmenter,
+  FilesetResolver,
+  ImageSegmenterResult,
+} from "@mediapipe/tasks-vision";
+import {
+  colorizeImgMaskedObjects,
+  colorizeMaskedObjects as colorizeVideoMaskedObjects,
+} from "./transform";
 
 // Get DOM elements
 const video = document.getElementById("webcam") as HTMLVideoElement;
@@ -120,19 +128,11 @@ function callback(result: ImageSegmenterResult) {
   let imageData = cxt.getImageData(0, 0, width, height).data;
   canvasClick.width = width;
   canvasClick.height = height;
-  let category: String = "";
-  const mask: Number[] = result.categoryMask.getAsUint8Array();
-  for (let i in mask) {
-    if (mask[i] > 0) {
-      category = labels[mask[i]];
-    }
-    const legendColor = legendColors[mask[i] % legendColors.length];
-    imageData[i * 4] = (legendColor[0] + imageData[i * 4]) / 2;
-    imageData[i * 4 + 1] = (legendColor[1] + imageData[i * 4 + 1]) / 2;
-    imageData[i * 4 + 2] = (legendColor[2] + imageData[i * 4 + 2]) / 2;
-    imageData[i * 4 + 3] = (legendColor[3] + imageData[i * 4 + 3]) / 2;
-  }
-  const uint8Array = new Uint8ClampedArray(imageData.buffer);
+  const [uint8Array, category] = colorizeImgMaskedObjects(
+    result,
+    imageData,
+    labels
+  );
   const dataNew = new ImageData(uint8Array, width, height);
   cxt.putImageData(dataNew, 0, 0);
   const p: HTMLElement =
@@ -148,18 +148,7 @@ function callbackForVideo(result: ImageSegmenterResult) {
     video.videoWidth,
     video.videoHeight
   ).data;
-  const mask: Number[] = result.categoryMask.getAsFloat32Array();
-  let j = 0;
-  for (let i = 0; i < mask.length; ++i) {
-    const maskVal = Math.round(mask[i] * 255.0);
-    const legendColor = legendColors[maskVal % legendColors.length];
-    imageData[j] = (legendColor[0] + imageData[j]) / 2;
-    imageData[j + 1] = (legendColor[1] + imageData[j + 1]) / 2;
-    imageData[j + 2] = (legendColor[2] + imageData[j + 2]) / 2;
-    imageData[j + 3] = (legendColor[3] + imageData[j + 3]) / 2;
-    j += 4;
-  }
-  const uint8Array = new Uint8ClampedArray(imageData.buffer);
+  const uint8Array = colorizeVideoMaskedObjects(result, imageData);
   const dataNew = new ImageData(
     uint8Array,
     video.videoWidth,
