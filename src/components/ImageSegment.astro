@@ -31,10 +31,7 @@
     </div>
 
     <div class="webcam">
-      <button id="webcamButton" class="mdc-button mdc-button--raised">
-        <span class="mdc-button__ripple"></span>
-        <span class="mdc-button__label">ENABLE WEBCAM</span>
-      </button>
+      <button id="webcamButton" class="form-input">ENABLE WEBCAM</button>
       <video id="webcam" autoplay style="display: none;"></video>
       <canvas id="canvas" width="1280px" height="720px"></canvas>
     </div>
@@ -42,26 +39,6 @@
 </section>
 
 <style>
-  body {
-    font-family: roboto;
-    margin: 2em;
-    color: #3d3d3d;
-    --mdc-theme-primary: #007f8b;
-    --mdc-theme-on-primary: #f1f3f4;
-  }
-
-  h1 {
-    color: #007f8b;
-  }
-
-  h2 {
-    clear: both;
-  }
-
-  em {
-    font-weight: bold;
-  }
-
   video {
     clear: both;
     display: block;
@@ -69,11 +46,6 @@
   canvas {
     clear: both;
     display: block;
-  }
-
-  section {
-    opacity: 1;
-    transition: opacity 500ms ease-in-out;
   }
 
   .removed {
