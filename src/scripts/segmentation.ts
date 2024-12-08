@@ -101,6 +101,10 @@ function callback(result: ImageSegmenterResult) {
   let imageData = cxt.getImageData(0, 0, width, height).data;
   canvasClick.width = width;
   canvasClick.height = height;
+  window["img1"] = analyzeImageCategories(
+    result,
+    new Uint8ClampedArray(imageData.buffer.slice(0))
+  );
   const [uint8Array, category] = colorizeImgMaskedObjects(
     result,
     imageData,
