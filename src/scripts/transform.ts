@@ -50,6 +50,7 @@ export function colorizeImgMaskedObjects(
 ): [Uint8ClampedArray, string] {
   let category: string = "";
   const mask: Uint8Array = result.categoryMask!.getAsUint8Array();
+  console.log(result, labels);
   for (let x in mask) {
     const i = parseInt(x);
     if (mask[i]! > 0) {
