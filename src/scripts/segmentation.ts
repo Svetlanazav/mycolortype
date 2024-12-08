@@ -121,10 +121,16 @@ function callbackForVideo(result: ImageSegmenterResult) {
     video.videoWidth,
     video.videoHeight
   ).data;
-  const uint8Array = colorizeVideoMaskedObjects(result, imageData);
-  window["colors"] = analyzeImageCategories(result, imageData);
+  const uint8Array = colorizeVideoMaskedObjects(
+    result,
+    new Uint8ClampedArray(imageData.buffer.slice(0))
+  );
+  window["colors"] = analyzeImageCategories(
+    result,
+    new Uint8ClampedArray(imageData.buffer.slice(0))
+  );
   const dataNew = new ImageData(
-    uint8Array,
+    new Uint8ClampedArray(imageData.buffer.slice(0)),
     video.videoWidth,
     video.videoHeight
   );
