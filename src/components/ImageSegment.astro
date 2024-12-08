@@ -10,7 +10,7 @@
   <div class="segmentOnClick">
     <canvas class="removed"></canvas>
     <img
-      src="https://assets.codepen.io/9177687/dog_flickr_publicdomain.jpeg"
+      src="/public/gaga.jpg"
       crossorigin="anonymous"
       title="Click to get segmentation!"
     />
@@ -19,29 +19,11 @@
   <div class="segmentOnClick">
     <canvas class="removed"></canvas>
     <img
-      src="/public/gaga.jpg"
+      src="https://assets.codepen.io/9177687/cat_flickr_publicdomain.jpeg"
       crossorigin="anonymous"
       title="Click to get segmentation!"
     />
     <p class="classification removed"></p>
-    <div class="segmentOnClick">
-      <canvas class="removed"></canvas>
-      <img
-        src="https://assets.codepen.io/9177687/cat_flickr_publicdomain.jpeg"
-        crossorigin="anonymous"
-        title="Click to get segmentation!"
-      />
-      <p class="classification removed"></p>
-
-      <h2>Demo: Webcam continuous segmentation</h2>
-      <p>
-        Hold some objects up close to your webcam to get real-time segmentation.
-      </p>Click <b>enable webcam</b> below and grant access to the webcam if prompted.
-    </div>
-    <h2>Demo: Webcam continuous segmentation</h2>
-    <p>
-      Hold some objects up close to your webcam to get real-time segmentation.
-    </p>Click <b>enable webcam</b> below and grant access to the webcam if prompted.
   </div>
 
   <div class="webcam">
@@ -49,101 +31,83 @@
     <video id="webcam" autoplay style="display: none;"></video>
     <canvas id="canvas" width="1280px" height="720px"></canvas>
   </div>
+
+  <div class="webcam">
+    <button id="webcamButton" class="mdc-button mdc-button--raised">
+      <span class="mdc-button__ripple"></span>
+      <span class="mdc-button__label">ENABLE WEBCAM</span>
+    </button>
+    <video id="webcam" autoplay style="display: none;"></video>
+    <canvas id="canvas" width="1280px" height="720px"></canvas>
+  </div>
+
+  <style>
+    video {
+      clear: both;
+      display: block;
+    }
+    canvas {
+      clear: both;
+      display: block;
+    }
+
+    video {
+      clear: both;
+      display: block;
+    }
+    canvas {
+      clear: both;
+      display: block;
+    }
+
+    section {
+      opacity: 1;
+      transition: opacity 500ms ease-in-out;
+    }
+
+    .removed {
+      display: none;
+    }
+
+    .invisible {
+      opacity: 0.2;
+    }
+
+    .videoView,
+    .segmentOnClick {
+      position: relative;
+      float: left;
+      width: 48%;
+      margin: 2% 1%;
+      cursor: pointer;
+    }
+
+    .segmentOnClick p {
+      padding: 5px;
+      background-color: #007f8b;
+      color: #fff;
+      z-index: 2;
+      font-size: 12px;
+      margin: 0;
+    }
+
+    .segmentOnClick {
+      z-index: 0;
+    }
+
+    .segmentOnClick canvas {
+      position: absolute;
+      top: 0px;
+      bottom: 0px;
+      width: 100%;
+    }
+
+    .segmentOnClick img {
+      width: 100%;
+    }
+  </style>
+
+  <script>
+    import "../scripts/segmentation.ts";
+  </script>
 </section>
-<div class="webcam">
-  <button id="webcamButton" class="mdc-button mdc-button--raised">
-    <span class="mdc-button__ripple"></span>
-    <span class="mdc-button__label">ENABLE WEBCAM</span>
-  </button>
-  <video id="webcam" autoplay style="display: none;"></video>
-  <canvas id="canvas" width="1280px" height="720px"></canvas>
-</div>
-
-<style>
-  video {
-    clear: both;
-    display: block;
-  }
-  canvas {
-    clear: both;
-    display: block;
-  }
-  <style > body {
-    font-family: roboto;
-    margin: 2em;
-    color: #3d3d3d;
-    --mdc-theme-primary: #007f8b;
-    --mdc-theme-on-primary: #f1f3f4;
-  }
-
-  h1 {
-    color: #007f8b;
-  }
-
-  h2 {
-    clear: both;
-  }
-
-  em {
-    font-weight: bold;
-  }
-
-  video {
-    clear: both;
-    display: block;
-  }
-  canvas {
-    clear: both;
-    display: block;
-  }
-
-  section {
-    opacity: 1;
-    transition: opacity 500ms ease-in-out;
-  }
-
-  .removed {
-    display: none;
-  }
-
-  .invisible {
-    opacity: 0.2;
-  }
-
-  .videoView,
-  .segmentOnClick {
-    position: relative;
-    float: left;
-    width: 48%;
-    margin: 2% 1%;
-    cursor: pointer;
-  }
-
-  .segmentOnClick p {
-    padding: 5px;
-    background-color: #007f8b;
-    color: #fff;
-    z-index: 2;
-    font-size: 12px;
-    margin: 0;
-  }
-
-  .segmentOnClick {
-    z-index: 0;
-  }
-
-  .segmentOnClick canvas {
-    position: absolute;
-    top: 0px;
-    bottom: 0px;
-    width: 100%;
-  }
-
-  .segmentOnClick img {
-    width: 100%;
-  }
-</style>
-
-<script>
-  import "../scripts/segmentation.ts";
-</script>
