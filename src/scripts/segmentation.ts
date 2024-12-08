@@ -21,6 +21,7 @@ import {
   colorizeImgMaskedObjects,
   colorizeMaskedObjects as colorizeVideoMaskedObjects,
 } from "./transform";
+import { analyzeImageCategories } from "./avrcolor";
 
 // Get DOM elements
 const video = document.getElementById("webcam") as HTMLVideoElement;
@@ -121,6 +122,7 @@ function callbackForVideo(result: ImageSegmenterResult) {
     video.videoHeight
   ).data;
   const uint8Array = colorizeVideoMaskedObjects(result, imageData);
+  window["colors"] = analyzeImageCategories(result, imageData);
   const dataNew = new ImageData(
     uint8Array,
     video.videoWidth,
