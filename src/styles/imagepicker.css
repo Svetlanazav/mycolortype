@@ -1,98 +1,5 @@
-:root {
-  --accent: 136, 58, 234;
-  --accent-light: 224, 204, 250;
-  --accent-dark: 49, 10, 101;
-  --accent-gradient: linear-gradient(
-    45deg,
-    rgb(var(--accent)),
-    rgb(var(--accent-light)) 30%,
-    white 60%
-  );
-}
-html {
-  font-family: system-ui, sans-serif;
-  background: white;
-}
-code {
-  font-family:
-    Menlo,
-    Monaco,
-    Lucida Console,
-    Liberation Mono,
-    DejaVu Sans Mono,
-    Bitstream Vera Sans Mono,
-    Courier New,
-    monospace;
-}
-
-/* nav styles */
-.hamburger {
-  padding-right: 20px;
-  padding-left: 10px;
-  cursor: pointer;
-}
-
-.hamburger .line {
-  display: block;
-  width: 40px;
-  height: 5px;
-  margin-bottom: 10px;
-  background-color: #d4afff;
-}
-
-.nav-links {
-  width: 100%;
-  top: 5rem;
-  left: 48px;
-  display: none;
-  margin: 0;
-}
-
-.nav-links a {
-  display: block;
-  text-align: center;
-  padding: 10px 0;
-  text-decoration: none;
-  font-size: 1.1rem;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.nav-links a:hover,
-.nav-links a:focus {
-  border-radius: 5%;
-  background-position: 0;
-  background-color: #23262d;
-}
-
-.expanded {
-  display: unset;
-}
-
-@media screen and (min-width: 636px) {
-  .nav-links {
-    margin-left: 5em;
-    display: block;
-    position: static;
-    width: auto;
-    background: none;
-  }
-
-  .nav-links a {
-    display: inline-block;
-    padding: 15px 20px;
-  }
-  .hamburger {
-    display: none;
-  }
-}
-
-/* color: #b53767 */
-
 /* Image picker  */
-._text-center {
-  text-align: center !important;
-}
+
 @media only screen and (min-width: 0px) and (min-height: 0px) {
   div[id^="bsa-zone_1695308711932-9_123456"] {
     min-width: 300px;
@@ -813,4 +720,26 @@ input:focus ~ .input-range_cursor {
   margin-bottom: 30px;
   font-variation-settings: "wght" 900;
   font-weight: 800;
+}
+
+.row--small-padding {
+  --rem: 16;
+  line-height: 1;
+  color: black;
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "wght" 450;
+  text-align: left;
+  box-sizing: border-box;
+  outline: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  appearance: none;
+  user-select: none;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  margin: -6px;
 }
