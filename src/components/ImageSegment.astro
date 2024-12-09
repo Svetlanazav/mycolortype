@@ -1,5 +1,6 @@
 ---
 import { AnalysisResults } from "./AnalysisResults";
+import { SeasonResults } from "./SeasonResults";
 ---
 
 <h1>Segmenting images using the MediaPipe Image Segmentation Task</h1>
@@ -7,6 +8,8 @@ import { AnalysisResults } from "./AnalysisResults";
 <section id="demos" class="invisible">
   <AnalysisResults client:only type="colors" />
   <AnalysisResults client:only type="img1" />
+  <SeasonResults client:only type="video_season" />
+  <SeasonResults client:only type="img_season" />
   <h2>Demo: Segmenting Images</h2>
   <p><b>Click on an image below</b> to see its Segmentation.</p>
   <div class="segmentOnClick">

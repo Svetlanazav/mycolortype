@@ -18,7 +18,7 @@ type SubSeason =
   | "Cool Winter"
   | "Bright Winter";
 
-interface SeasonalCharacteristics {
+export interface SeasonalCharacteristics {
   season: Season;
   subSeason: SubSeason;
   characteristics: {
