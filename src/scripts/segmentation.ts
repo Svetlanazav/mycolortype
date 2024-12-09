@@ -21,7 +21,8 @@ import {
   colorizeImgMaskedObjects,
   colorizeMaskedObjects as colorizeVideoMaskedObjects,
 } from "./transform";
-import { analyzeImageCategories } from "./avrcolor";
+// import { analyzeImageCategories } from "./avrcolor";
+import { analyzeImageCategoriesEnhanced as analyzeImageCategories } from "./avrcolorenhanced";
 
 // Get DOM elements
 const video = document.getElementById("webcam") as HTMLVideoElement;
