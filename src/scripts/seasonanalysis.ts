@@ -32,8 +32,8 @@ interface SeasonalCharacteristics {
 
 interface ColorValues {
   hair: ColorAnalysis;
-  faceSkin: ColorAnalysis;
   bodySkin: ColorAnalysis;
+  faceSkin: ColorAnalysis;
 }
 
 export function determineSeasonalPalette(
