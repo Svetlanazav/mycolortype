@@ -1,21 +1,8 @@
-// Copyright 2023 The MediaPipe Authors.
-
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-
-//      http://www.apache.org/licenses/LICENSE-2.0
-
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 import {
   ImageSegmenter,
   FilesetResolver,
   ImageSegmenterResult,
+  FaceLandmarker,
 } from "@mediapipe/tasks-vision";
 import {
   colorizeImgMaskedObjects,
@@ -23,6 +10,7 @@ import {
 } from "./transform";
 // import { analyzeImageCategories } from "./avrcolor";
 import { analyzeImageCategoriesEnhanced as analyzeImageCategories } from "./avrcolorenhanced";
+import { determineSeasonalPalette } from "./seasonanalysis";
 
 // Get DOM elements
 const video = document.getElementById("webcam") as HTMLVideoElement;
@@ -32,16 +20,17 @@ const demosSection: HTMLElement = document.getElementById("demos")!;
 let enableWebcamButton: HTMLButtonElement;
 let webcamRunning: Boolean = false;
 let runningMode: "IMAGE" | "VIDEO" = "IMAGE";
+let faceLandmarker: FaceLandmarker;
 
 let imageSegmenter: ImageSegmenter;
 let labels: Array<string>;
 
 const createImageSegmenter = async () => {
-  const audio = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/wasm"
+  const filesetresolver = await FilesetResolver.forVisionTasks(
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
   );
 
-  imageSegmenter = await ImageSegmenter.createFromOptions(audio, {
+  imageSegmenter = await ImageSegmenter.createFromOptions(filesetresolver, {
     baseOptions: {
       modelAssetPath:
         "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite",
@@ -51,6 +40,16 @@ const createImageSegmenter = async () => {
     outputCategoryMask: true,
     outputConfidenceMasks: false,
   });
+  faceLandmarker = await FaceLandmarker.createFromOptions(filesetresolver, {
+    baseOptions: {
+      modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+      delegate: "GPU",
+    },
+    outputFaceBlendshapes: true,
+    runningMode,
+    numFaces: 1,
+  });
+
   labels = imageSegmenter.getLabels();
   demosSection.classList.remove("invisible");
 };
@@ -102,10 +101,12 @@ function callback(result: ImageSegmenterResult) {
   let imageData = cxt.getImageData(0, 0, width, height).data;
   canvasClick.width = width;
   canvasClick.height = height;
-  window["img1"] = analyzeImageCategories(
+  const enhancedCategoryColors = analyzeImageCategories(
     result,
     new Uint8ClampedArray(imageData.buffer.slice(0))
   );
+  window["img1"] = enhancedCategoryColors;
+  window["img_season"] = determineSeasonalPalette(enhancedCategoryColors);
   const [uint8Array, category] = colorizeImgMaskedObjects(
     result,
     imageData,
