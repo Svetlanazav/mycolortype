@@ -3,6 +3,8 @@ import {
   FilesetResolver,
   ImageSegmenterResult,
   FaceLandmarker,
+  type FaceLandmarkerResult,
+  DrawingUtils,
 } from "@mediapipe/tasks-vision";
 import {
   colorizeImgMaskedObjects,
@@ -15,6 +17,7 @@ import { determineSeasonalPalette } from "./seasonanalysis";
 // Get DOM elements
 const video = document.getElementById("webcam") as HTMLVideoElement;
 const canvasElement = document.getElementById("canvas") as HTMLCanvasElement;
+const imageBlendShapes = document.getElementById("image-blend-shapes");
 const canvasCtx = canvasElement.getContext("2d");
 const demosSection: HTMLElement = document.getElementById("demos")!;
 let enableWebcamButton: HTMLButtonElement;
@@ -69,6 +72,7 @@ for (let i = 0; i < imageContainers.length; i++) {
 /**
  * Demo 1: Segmented images on click and display results.
  */
+
 let canvasClick: HTMLCanvasElement;
 async function handleClick(event: any) {
   // Do not segmented if imageSegmenter hasn't loaded
@@ -91,11 +95,74 @@ async function handleClick(event: any) {
     });
   }
 
+  const { promise: imageSegmenterCallbackHasBeenCalled, resolve } =
+    Promise.withResolvers<void>();
   // imageSegmenter.segment() when resolved will call the callback function.
-  imageSegmenter.segment(event.target, callback);
+  imageSegmenter.segment(event.target, (result) => {
+    processImageSegmenterResult(result);
+    resolve();
+  });
+
+  await imageSegmenterCallbackHasBeenCalled;
+
+  const faceLandmarkerResult = faceLandmarker.detect(event.target);
+  processFaceLandmarkerResult(faceLandmarkerResult);
 }
 
-function callback(result: ImageSegmenterResult) {
+function processFaceLandmarkerResult(result: FaceLandmarkerResult) {
+  result;
+  event.target!.parentNode.appendChild(canvasClick);
+  const ctx = canvasClick.getContext("2d");
+  const drawingUtils = new DrawingUtils(ctx!);
+  for (const landmarks of result.faceLandmarks) {
+    drawingUtils.drawConnectors(
+      landmarks,
+      FaceLandmarker.FACE_LANDMARKS_TESSELATION,
+      { color: "#C0C0C070", lineWidth: 1 }
+    );
+    drawingUtils.drawConnectors(
+      landmarks,
+      FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE,
+      { color: "#FF3030" }
+    );
+    drawingUtils.drawConnectors(
+      landmarks,
+      FaceLandmarker.FACE_LANDMARKS_RIGHT_EYEBROW,
+      { color: "#FF3030" }
+    );
+    drawingUtils.drawConnectors(
+      landmarks,
+      FaceLandmarker.FACE_LANDMARKS_LEFT_EYE,
+      { color: "#30FF30" }
+    );
+    drawingUtils.drawConnectors(
+      landmarks,
+      FaceLandmarker.FACE_LANDMARKS_LEFT_EYEBROW,
+      { color: "#30FF30" }
+    );
+    drawingUtils.drawConnectors(
+      landmarks,
+      FaceLandmarker.FACE_LANDMARKS_FACE_OVAL,
+      { color: "#E0E0E0" }
+    );
+    drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LIPS, {
+      color: "#E0E0E0",
+    });
+    drawingUtils.drawConnectors(
+      landmarks,
+      FaceLandmarker.FACE_LANDMARKS_RIGHT_IRIS,
+      { color: "#FF3030" }
+    );
+    drawingUtils.drawConnectors(
+      landmarks,
+      FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS,
+      { color: "#30FF30" }
+    );
+  }
+  drawBlendShapes(imageBlendShapes!, result.faceBlendshapes);
+}
+
+function processImageSegmenterResult(result: ImageSegmenterResult) {
   const cxt = canvasClick.getContext("2d")!;
   const { width, height } = result.categoryMask;
   let imageData = cxt.getImageData(0, 0, width, height).data;
@@ -146,6 +213,29 @@ function callbackForVideo(result: ImageSegmenterResult) {
   }
 }
 
+function drawBlendShapes(el: HTMLElement, blendShapes: any[]) {
+  if (!blendShapes.length) {
+    return;
+  }
+
+  console.log(blendShapes[0]);
+
+  let htmlMaker = "";
+  blendShapes[0].categories.map((shape) => {
+    htmlMaker += `
+      <li class="blend-shapes-item">
+        <span class="blend-shapes-label">${
+          shape.displayName || shape.categoryName
+        }</span>
+        <span class="blend-shapes-value" style="width: calc(${
+          +shape.score * 100
+        }% - 120px)">${(+shape.score).toFixed(4)}</span>
+      </li>
+    `;
+  });
+
+  el.innerHTML = htmlMaker;
+}
 /********************************************************************
 // Demo 2: Continuously grab image from webcam stream and segmented it.
 ********************************************************************/
