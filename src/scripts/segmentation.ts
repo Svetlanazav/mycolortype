@@ -13,6 +13,8 @@ import {
 // import { analyzeImageCategories } from "./avrcolor";
 import { analyzeImageCategoriesEnhanced as analyzeImageCategories } from "./avrcolorenhanced";
 import { determineSeasonalPalette } from "./seasonanalysis";
+import { FaceColorAnalyzer } from "./facecolor";
+import { displayColorSwatches } from "./displaycolors";
 
 // Get DOM elements
 const video = document.getElementById("webcam") as HTMLVideoElement;
@@ -107,12 +109,34 @@ async function handleClick(event: any) {
 
   const faceLandmarkerResult = faceLandmarker.detect(event.target);
   processFaceLandmarkerResult(faceLandmarkerResult);
+
+  const canvas2 = document.createElement("canvas");
+  canvas2.width = event.target.naturalWidth;
+  canvas2.height = event.target.naturalHeight;
+  const cxt2 = canvas2.getContext("2d")!;
+  cxt2.clearRect(0, 0, canvas2.width, canvas2.height);
+  cxt2.drawImage(event.target, 0, 0, canvas2.width, canvas2.height);
+  document.body.appendChild(canvas2);
+  const colorAnalyzer = new FaceColorAnalyzer(canvas2, cxt2!);
+  const faceColors = colorAnalyzer.analyzeFaceColors(
+    faceLandmarkerResult.faceLandmarks[0]
+  );
+  const container = document.getElementById("results-container");
+  displayColorSwatches(faceColors, container!);
+
+  // console.log("Face Colors:", {
+  //   leftIrisColor: `rgb(${faceColors.leftIris.r}, ${faceColors.leftIris.g}, ${faceColors.leftIris.b})`,
+  //   rightIrisColor: `rgb(${faceColors.rightIris.r}, ${faceColors.rightIris.g}, ${faceColors.rightIris.b})`,
+  //   lipsColor: `rgb(${faceColors.lips.r}, ${faceColors.lips.g}, ${faceColors.lips.b})`,
+  //   skinColor: `rgb(${faceColors.skin.r}, ${faceColors.skin.g}, ${faceColors.skin.b})`,
+  // });
 }
 
 function processFaceLandmarkerResult(result: FaceLandmarkerResult) {
   result;
   event.target!.parentNode.appendChild(canvasClick);
   const ctx = canvasClick.getContext("2d");
+  const colorAnalyzer = new FaceColorAnalyzer(canvasClick, ctx);
   const drawingUtils = new DrawingUtils(ctx!);
   for (const landmarks of result.faceLandmarks) {
     drawingUtils.drawConnectors(
@@ -156,7 +180,7 @@ function processFaceLandmarkerResult(result: FaceLandmarkerResult) {
     drawingUtils.drawConnectors(
       landmarks,
       FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS,
-      { color: "#30FF30" }
+      { color: "#505F30" }
     );
   }
   drawBlendShapes(imageBlendShapes!, result.faceBlendshapes);

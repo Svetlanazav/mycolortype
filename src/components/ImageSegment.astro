@@ -4,34 +4,40 @@ import { SeasonResults } from "./SeasonResults";
 ---
 
 <h1>Segmenting images using the MediaPipe Image Segmentation Task</h1>
-<div class="flex h-full">
-  <!-- Image Container -->
-  <div
-    class="flex-1 bg-grey-200 flex justify-center group hover:bg-blue-100 transition duration-300"
-  >
-    <section id="demos" class="invisible"></section>
-    <div class="segmentOnClick">
-      <canvas class="removed"></canvas>
-      <img
-        src="/public/gaga.jpg"
-        crossorigin="anonymous"
-        title="Click to get segmentation!"
-      />
-      <p class="classification removed"></p>
-    </div>
-  </div>
 
-  <div
-    class="flex-1 bg-gray-800 text-white flex items-center justify-center group hover:bg-gray-900 transition duration-300"
-  >
-    <div class="p-6 text-center">
-      <AnalysisResults client:only type="colors" />
-      <AnalysisResults client:only type="img1" />
-      <SeasonResults client:only type="video_season" />
-      <SeasonResults client:only type="img_season" />
-    </div>
+<!-- Image Container -->
+<div
+  class="flex-1 bg-grey-200 flex justify-center group hover:bg-blue-100 transition duration-300"
+>
+  <section id="demos" class="invisible"></section>
+  <div class="segmentOnClick">
+    <canvas class="removed"></canvas>
+    <img
+      src="/public/nasty.jpg"
+      crossorigin="anonymous"
+      title="Click to get segmentation!"
+    />
+    <p class="classification removed"></p>
   </div>
 </div>
+
+<div
+  class="flex-1 bg-gray-800 text-white flex items-center justify-center group hover:bg-gray-900 transition duration-300"
+>
+  <div class="p-6 text-center">
+    <AnalysisResults client:only type="colors" />
+    <AnalysisResults client:only type="img1" />
+    <SeasonResults client:only type="video_season" />
+    <SeasonResults client:only type="img_season" />
+  </div>
+</div>
+
+<div
+  class="container flex-1 bg-gray-800 text-white flex items-center justify-center group hover:bg-gray-900 transition duration-300"
+  id="results-container"
+>
+</div>
+
 <div class="webcam">
   <button id="webcamButton" class="form-input">ENABLE WEBCAM</button>
   <video id="webcam" autoplay style="display: none;"></video>
