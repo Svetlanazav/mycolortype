@@ -9,6 +9,7 @@ export function displayColorSwatches(
     rightIris: RGB;
     lips: RGB;
     skin: RGB;
+    eyeColor: RGB;
   },
   containerElement: HTMLElement // Add this parameter
 ) {
@@ -18,14 +19,15 @@ export function displayColorSwatches(
   swatchContainer.style.gap = "10px";
   swatchContainer.style.margin = "10px";
 
-  const features = ["Left Iris", "Right Iris", "Lips", "Skin"];
+  const features = ["Left Iris", "Right Iris", "Lips", "Skin", "eyeColor"];
   const colorValues = [
     colors.leftIris,
     colors.rightIris,
     colors.lips,
     colors.skin,
+    colors.eyeColor,
   ];
-
+  console.log(colorValues);
   features.forEach((feature, index) => {
     const swatch = document.createElement("div");
     const color = colorValues[index]!;

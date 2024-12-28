@@ -119,7 +119,7 @@ async function handleClick(event: any) {
   document.body.appendChild(canvas2);
   const colorAnalyzer = new FaceColorAnalyzer(canvas2, cxt2!);
   const faceColors = colorAnalyzer.analyzeFaceColors(
-    faceLandmarkerResult.faceLandmarks[0]
+    faceLandmarkerResult.faceLandmarks[0]!
   );
   const container = document.getElementById("results-container");
   displayColorSwatches(faceColors, container!);
@@ -136,7 +136,6 @@ function processFaceLandmarkerResult(result: FaceLandmarkerResult) {
   result;
   event.target!.parentNode.appendChild(canvasClick);
   const ctx = canvasClick.getContext("2d");
-  const colorAnalyzer = new FaceColorAnalyzer(canvasClick, ctx);
   const drawingUtils = new DrawingUtils(ctx!);
   for (const landmarks of result.faceLandmarks) {
     drawingUtils.drawConnectors(

@@ -4,441 +4,7 @@ import {
   type FaceLandmarkerResult,
   type NormalizedLandmark,
 } from "@mediapipe/tasks-vision";
-
-// interface RGB {
-//   r: number;
-//   g: number;
-//   b: number;
-// }
-
-// interface ColorStats {
-//   averageColor: RGB;
-//   sampleCount: number;
-// }
-
-// export class FaceColorAnalyzer {
-//   private readonly ctx: CanvasRenderingContext2D;
-//   private readonly canvas: HTMLCanvasElement;
-
-//   // Threshold for excluding extreme colors (0-255)
-//   private readonly BRIGHTNESS_THRESHOLD = 30; // for dark colors
-//   private readonly DARKNESS_THRESHOLD = 225; // for bright colors
-
-//   // Sample radius around each landmark point
-//   private readonly SAMPLE_RADIUS = 2;
-
-//   constructor(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
-//     this.canvas = canvas;
-//     this.ctx = context;
-//   }
-
-//   private isValidColor(color: RGB): boolean {
-//     // Check if the color is too dark or too bright
-//     const brightness = (color.r + color.g + color.b) / 3;
-//     return (
-//       brightness > this.BRIGHTNESS_THRESHOLD &&
-//       brightness < this.DARKNESS_THRESHOLD
-//     );
-//   }
-
-//   private getPixelColor(x: number, y: number): RGB {
-//     const pixel = this.ctx.getImageData(
-//       Math.floor(x),
-//       Math.floor(y),
-//       1,
-//       1
-//     ).data;
-//     return {
-//       r: pixel[0]!,
-//       g: pixel[1]!,
-//       b: pixel[2]!,
-//     };
-//   }
-
-//   private sampleAreaColors(centerX: number, centerY: number): ColorStats {
-//     let validColors: RGB[] = [];
-
-//     // Sample pixels in a square around the center point
-//     for (let dx = -this.SAMPLE_RADIUS; dx <= this.SAMPLE_RADIUS; dx++) {
-//       for (let dy = -this.SAMPLE_RADIUS; dy <= this.SAMPLE_RADIUS; dy++) {
-//         const x = centerX + dx;
-//         const y = centerY + dy;
-
-//         // Ensure we're within canvas bounds
-//         if (
-//           x >= 0 &&
-//           x < this.canvas.width &&
-//           y >= 0 &&
-//           y < this.canvas.height
-//         ) {
-//           const color = this.getPixelColor(x, y);
-//           if (this.isValidColor(color)) {
-//             validColors.push(color);
-//           }
-//         }
-//       }
-//     }
-
-//     // Calculate average color from valid samples
-//     const averageColor = validColors.reduce(
-//       (acc, color) => ({
-//         r: acc.r + color.r / validColors.length,
-//         g: acc.g + color.g / validColors.length,
-//         b: acc.b + color.b / validColors.length,
-//       }),
-//       { r: 0, g: 0, b: 0 }
-//     );
-
-//     return {
-//       averageColor,
-//       sampleCount: validColors.length,
-//     };
-//   }
-
-//   public analyzeFaceColors(landmarks: any): {
-//     leftIris: RGB;
-//     rightIris: RGB;
-//     lips: RGB;
-//     skin: RGB;
-//   } {
-//     // Calculate average colors for each facial feature
-//     const leftIrisColors = FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS.map(
-//       ({ start, end }) => {
-//         const point = landmarks[start];
-//         return this.sampleAreaColors(
-//           point.x * this.canvas.width,
-//           point.y * this.canvas.height
-//         );
-//       }
-//     ).filter((stats) => stats.sampleCount > 0);
-
-//     const rightIrisColors = FaceLandmarker.FACE_LANDMARKS_RIGHT_IRIS.map(
-//       ({ start, end }) => {
-//         const point = landmarks[start];
-//         return this.sampleAreaColors(
-//           point.x * this.canvas.width,
-//           point.y * this.canvas.height
-//         );
-//       }
-//     ).filter((stats) => stats.sampleCount > 0);
-
-//     const lipColors = FaceLandmarker.FACE_LANDMARKS_LIPS.map(
-//       ({ start, end }) => {
-//         const point = landmarks[start];
-//         return this.sampleAreaColors(
-//           point.x * this.canvas.width,
-//           point.y * this.canvas.height
-//         );
-//       }
-//     ).filter((stats) => stats.sampleCount > 0);
-
-//     // For skin color, sample from specific face oval points while avoiding eyes and lips areas
-//     const skinLandmarks = FaceLandmarker.FACE_LANDMARKS_FACE_OVAL.filter(
-//       ({ start, end }) => {
-//         // Add logic here to exclude points near eyes and lips
-//         // This is a simplified version - you might want to add more sophisticated filtering
-//         const point = landmarks[start];
-//         const y = point.y * this.canvas.height;
-//         return y > this.canvas.height * 0.4 && y < this.canvas.height * 0.7;
-//       }
-//     );
-
-//     const skinColors = skinLandmarks
-//       .map(({ start, end }) => {
-//         const point = landmarks[start];
-//         return this.sampleAreaColors(
-//           point.x * this.canvas.width,
-//           point.y * this.canvas.height
-//         );
-//       })
-//       .filter((stats) => stats.sampleCount > 0);
-
-//     // Calculate final average colors
-//     const averageColor = (colors: ColorStats[]): RGB => ({
-//       r:
-//         colors.reduce(
-//           (sum, stat) => sum + stat.averageColor.r * stat.sampleCount,
-//           0
-//         ) / colors.reduce((sum, stat) => sum + stat.sampleCount, 0),
-//       g:
-//         colors.reduce(
-//           (sum, stat) => sum + stat.averageColor.g * stat.sampleCount,
-//           0
-//         ) / colors.reduce((sum, stat) => sum + stat.sampleCount, 0),
-//       b:
-//         colors.reduce(
-//           (sum, stat) => sum + stat.averageColor.b * stat.sampleCount,
-//           0
-//         ) / colors.reduce((sum, stat) => sum + stat.sampleCount, 0),
-//     });
-
-//     return {
-//       leftIris: averageColor(leftIrisColors),
-//       rightIris: averageColor(rightIrisColors),
-//       lips: averageColor(lipColors),
-//       skin: averageColor(skinColors),
-//     };
-//   }
-// }
-
-// interface RGB {
-//   r: number;
-//   g: number;
-//   b: number;
-// }
-
-// interface ColorCluster {
-//   colors: RGB[];
-//   center: RGB;
-// }
-
-// export class FaceColorAnalyzer {
-//   private readonly ctx: CanvasRenderingContext2D;
-//   private readonly canvas: HTMLCanvasElement;
-
-//   // Increased sample radius for better color collection
-//   private readonly SAMPLE_RADIUS = 3;
-
-//   // Number of clusters for k-means
-//   private readonly NUM_CLUSTERS = 3;
-
-//   // Minimum number of samples needed for valid analysis
-//   private readonly MIN_SAMPLES = 5;
-
-//   constructor(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
-//     this.canvas = canvas;
-//     this.ctx = context;
-//   }
-
-//   private getPixelColor(x: number, y: number): RGB {
-//     const pixel = this.ctx.getImageData(
-//       Math.floor(x),
-//       Math.floor(y),
-//       1,
-//       1
-//     ).data;
-//     return {
-//       r: pixel[0]!,
-//       g: pixel[1]!,
-//       b: pixel[2]!,
-//     };
-//   }
-
-//   private colorDistance(color1: RGB, color2: RGB): number {
-//     // Using CIE76 color difference formula for better accuracy
-//     const rMean = (color1.r + color2.r) / 2;
-//     const deltaR = color1.r - color2.r;
-//     const deltaG = color1.g - color2.g;
-//     const deltaB = color1.b - color2.b;
-
-//     return Math.sqrt(
-//       (2 + rMean / 256) * deltaR * deltaR +
-//         4 * deltaG * deltaG +
-//         (2 + (255 - rMean) / 256) * deltaB * deltaB
-//     );
-//   }
-
-//   private kMeansClustering(colors: RGB[]): ColorCluster[] {
-//     if (colors.length < this.MIN_SAMPLES) {
-//       return [
-//         {
-//           colors: colors,
-//           center: colors[0]!,
-//         },
-//       ];
-//     }
-
-//     // Initialize clusters with random centers
-//     let clusters: ColorCluster[] = Array(this.NUM_CLUSTERS)
-//       .fill(null)
-//       .map(() => {
-//         const randomIndex = Math.floor(Math.random() * colors.length);
-//         return {
-//           colors: [],
-//           center: colors[randomIndex],
-//         };
-//       });
-
-//     let changed = true;
-//     const MAX_ITERATIONS = 10;
-//     let iterations = 0;
-
-//     while (changed && iterations < MAX_ITERATIONS) {
-//       changed = false;
-//       iterations++;
-
-//       // Reset clusters
-//       clusters.forEach((cluster) => (cluster.colors = []));
-
-//       // Assign colors to nearest cluster
-//       colors.forEach((color) => {
-//         let minDistance = Infinity;
-//         let nearestCluster = clusters[0];
-
-//         clusters.forEach((cluster) => {
-//           const distance = this.colorDistance(color, cluster.center);
-//           if (distance < minDistance) {
-//             minDistance = distance;
-//             nearestCluster = cluster;
-//           }
-//         });
-
-//         nearestCluster!.colors.push(color);
-//       });
-
-//       // Update cluster centers
-//       clusters.forEach((cluster) => {
-//         if (cluster.colors.length === 0) return;
-
-//         const newCenter: RGB = {
-//           r: Math.round(
-//             cluster.colors.reduce((sum, c) => sum + c.r, 0) /
-//               cluster.colors.length
-//           ),
-//           g: Math.round(
-//             cluster.colors.reduce((sum, c) => sum + c.g, 0) /
-//               cluster.colors.length
-//           ),
-//           b: Math.round(
-//             cluster.colors.reduce((sum, c) => sum + c.b, 0) /
-//               cluster.colors.length
-//           ),
-//         };
-
-//         if (this.colorDistance(newCenter, cluster.center) > 1) {
-//           changed = true;
-//           cluster.center = newCenter;
-//         }
-//       });
-//     }
-
-//     // Filter out empty clusters
-//     return clusters.filter((cluster) => cluster.colors.length > 0);
-//   }
-
-//   private getDominantColor(colors: RGB[]): RGB {
-//     if (colors.length === 0) {
-//       return { r: 0, g: 0, b: 0 };
-//     }
-
-//     const clusters = this.kMeansClustering(colors);
-
-//     // Sort clusters by size and pick the largest one
-//     clusters.sort((a, b) => b.colors.length - a.colors.length);
-
-//     // Return the center of the largest cluster
-//     return clusters[0]!.center;
-//   }
-
-//   private sampleAreaColors(centerX: number, centerY: number): RGB[] {
-//     let colors: RGB[] = [];
-
-//     // Sample in a circular pattern for better coverage
-//     for (let dx = -this.SAMPLE_RADIUS; dx <= this.SAMPLE_RADIUS; dx++) {
-//       for (let dy = -this.SAMPLE_RADIUS; dy <= this.SAMPLE_RADIUS; dy++) {
-//         // Check if point is within circular radius
-//         if (dx * dx + dy * dy <= this.SAMPLE_RADIUS * this.SAMPLE_RADIUS) {
-//           const x = Math.floor(centerX + dx);
-//           const y = Math.floor(centerY + dy);
-
-//           if (
-//             x >= 0 &&
-//             x < this.canvas.width &&
-//             y >= 0 &&
-//             y < this.canvas.height
-//           ) {
-//             colors.push(this.getPixelColor(x, y));
-//           }
-//         }
-//       }
-//     }
-
-//     return colors;
-//   }
-
-//   public analyzeFaceColors(landmarks: any): {
-//     leftIris: RGB;
-//     rightIris: RGB;
-//     lips: RGB;
-//     skin: RGB;
-//   } {
-//     // Collect color samples for each feature
-//     const leftIrisColors: RGB[] = [];
-//     const rightIrisColors: RGB[] = [];
-//     const lipColors: RGB[] = [];
-//     const skinColors: RGB[] = [];
-
-//     // Sample iris colors - using specific iris landmark indices
-//     const leftIrisIndices = [468, 469, 470, 471, 472]; // MediaPipe left iris landmarks
-//     leftIrisIndices.forEach((index) => {
-//       const point = landmarks[index];
-//       leftIrisColors.push(
-//         ...this.sampleAreaColors(
-//           point.x * this.canvas.width,
-//           point.y * this.canvas.height
-//         )
-//       );
-//     });
-
-//     const rightIrisIndices = [473, 474, 475, 476, 477]; // MediaPipe right iris landmarks
-//     rightIrisIndices.forEach((index) => {
-//       const point = landmarks[index];
-//       rightIrisColors.push(
-//         ...this.sampleAreaColors(
-//           point.x * this.canvas.width,
-//           point.y * this.canvas.height
-//         )
-//       );
-//     });
-
-//     // Sample lip colors - using specific lip landmark indices
-//     const lipIndices = [
-//       0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146, 61,
-//       185, 40, 39, 37,
-//     ]; // MediaPipe lip landmarks
-//     lipIndices.forEach((index) => {
-//       const point = landmarks[index];
-//       lipColors.push(
-//         ...this.sampleAreaColors(
-//           point.x * this.canvas.width,
-//           point.y * this.canvas.height
-//         )
-//       );
-//     });
-
-//     // Sample skin colors from cheek areas
-//     // Using specific indices for cheeks to avoid shadows and other features
-//     const cheekIndices = [
-//       93,
-//       132,
-//       58,
-//       172,
-//       136,
-//       150,
-//       149,
-//       176,
-//       148,
-//       152, // Adjust these indices based on MediaPipe face mesh
-//     ];
-
-//     cheekIndices.forEach((index) => {
-//       const point = landmarks[index];
-//       skinColors.push(
-//         ...this.sampleAreaColors(
-//           point.x * this.canvas.width,
-//           point.y * this.canvas.height
-//         )
-//       );
-//     });
-
-//     return {
-//       leftIris: this.getDominantColor(leftIrisColors),
-//       rightIris: this.getDominantColor(rightIrisColors),
-//       lips: this.getDominantColor(lipColors),
-//       skin: this.getDominantColor(skinColors),
-//     };
-//   }
-// }
+import { getIrisColor } from "./asdfasd";
 
 interface RGB {
   r: number;
@@ -637,19 +203,19 @@ export class FaceColorAnalyzer {
         ? [
             {
               colors: colors,
-              center: colors[0],
+              center: colors[0]!,
             },
           ]
         : [];
     }
 
-    let clusters: ColorCluster[] = Array(this.NUM_CLUSTERS)
+    let clusters: ColorCluster[] = new Array(this.NUM_CLUSTERS)
       .fill(null)
       .map(() => {
         const randomIndex = Math.floor(Math.random() * colors.length);
         return {
           colors: [],
-          center: colors[randomIndex],
+          center: colors[randomIndex]!,
         };
       });
 
@@ -721,10 +287,11 @@ export class FaceColorAnalyzer {
     rightIris: RGB;
     lips: RGB;
     skin: RGB;
+    eyeColor: RGB;
   } {
     // Initialize color arrays
     const leftIrisColors: RGB[] = [];
-    const rightIrisColors: RGB[] = [];
+    const rightIrisColors: RGB[] = this.getIrisColors(landmarks);
     const lipColors: RGB[] = [];
     const skinColors: RGB[] = [];
 
@@ -742,28 +309,28 @@ export class FaceColorAnalyzer {
     });
     // вычислить точку между двумя точками x i y
 
-    const rightIrisOuterIndices = [384, 380, 374, 385];
-    rightIrisOuterIndices.forEach((index) => {
-      const point = landmarks[index]!;
-      const samples = this.sampleAreaColors(
-        point.x * this.canvas.width,
-        point.y * this.canvas.height,
-        this.IRIS_SAMPLE_RADIUS,
-        this.isValidIrisColor.bind(this)
-      );
-      rightIrisColors.push(...samples);
-    });
+    // const rightIrisOuterIndices = [385, 476, 476, 477, 477, 474];
+    // rightIrisOuterIndices.forEach((index) => {
+    //   const point = landmarks[index]!;
+    //   const samples = this.sampleAreaColors(
+    //     point.x * this.canvas.width,
+    //     point.y * this.canvas.height,
+    //     this.IRIS_SAMPLE_RADIUS,
+    //     this.isValidIrisColor.bind(this)
+    //   );
+    //   rightIrisColors.push(...samples);
+    // });
 
     const draw = new DrawingUtils(this.ctx);
-    draw.drawConnectors(
-      landmarks,
-      rightIrisOuterIndices
-        .map((x, i, a) => ({ start: x, end: a[i + 1]! }))
-        .filter((x) => x.end),
-      {
-        color: "red",
-      }
-    );
+    // draw.drawConnectors(
+    //   landmarks,
+    //   rightIrisOuterIndices
+    //     .map((x, i, a) => ({ start: x, end: a[i + 1]! }))
+    //     .filter((x) => x.end),
+    //   {
+    //     color: "red",
+    //   }
+    // );
     draw.drawConnectors(
       landmarks,
       leftIrisOuterIndices
@@ -780,7 +347,7 @@ export class FaceColorAnalyzer {
       185, 40, 39, 37, 87, 13, 14, 317, 402, 318, 324, 308,
     ];
     lipIndices.forEach((index) => {
-      const point = landmarks[index];
+      const point = landmarks[index]!;
       const samples = this.sampleAreaColors(
         point.x * this.canvas.width,
         point.y * this.canvas.height,
@@ -802,7 +369,7 @@ export class FaceColorAnalyzer {
       4, 51, 195, 281, 5,
     ];
     skinIndices.forEach((index) => {
-      const point = landmarks[index];
+      const point = landmarks[index]!;
       const samples = this.sampleAreaColors(
         point.x * this.canvas.width,
         point.y * this.canvas.height,
@@ -812,8 +379,15 @@ export class FaceColorAnalyzer {
       skinColors.push(...samples);
     });
 
+    let imageData = this.ctx.getImageData(
+      0,
+      0,
+      this.canvas.width,
+      this.canvas.height
+    );
     // Get dominant colors for each feature
     return {
+      eyeColor: detectEyeColor(imageData, landmarks),
       leftIris: this.getDominantColor(leftIrisColors),
       rightIris: this.getDominantColor(rightIrisColors),
       lips: this.getDominantColor(lipColors),
@@ -821,46 +395,92 @@ export class FaceColorAnalyzer {
     };
   }
 
-  // Debug method to visualize sampling points
-  public debugSamplingPoints(
-    landmarks: any,
-    ctx: CanvasRenderingContext2D
-  ): void {
-    const drawPoint = (x: number, y: number, color: string) => {
-      ctx.beginPath();
-      ctx.arc(x, y, 2, 0, 2 * Math.PI);
-      ctx.fillStyle = color;
-      ctx.fill();
+  private calculateMidpoint(
+    point1: { x: number; y: number },
+    point2: { x: number; y: number }
+  ): { x: number; y: number } {
+    return {
+      x: (point1.x + point2.x) / 2,
+      y: (point1.y + point2.y) / 2,
     };
-
-    // Draw iris points
-    [468, 469, 471, 472].forEach((index) => {
-      const point = landmarks[index];
-      drawPoint(
-        point.x * this.canvas.width,
-        point.y * this.canvas.height,
-        "blue"
-      );
-    });
-
-    // Draw lip points
-    [0, 267, 269, 270, 409, 291, 375, 321, 405, 314].forEach((index) => {
-      const point = landmarks[index];
-      drawPoint(
-        point.x * this.canvas.width,
-        point.y * this.canvas.height,
-        "red"
-      );
-    });
-
-    // Draw skin points
-    [123, 147, 187, 205, 36, 356, 389, 367, 397, 435].forEach((index) => {
-      const point = landmarks[index];
-      drawPoint(
-        point.x * this.canvas.width,
-        point.y * this.canvas.height,
-        "green"
-      );
-    });
   }
+
+  public getIrisColors(landmarks: NormalizedLandmark[]): RGB[] {
+    const rightIrisColors: RGB[] = [];
+
+    // Define pairs of points for midpoint calculation
+    const rightIrisIndicesWithMidpoints = [
+      [385, 476], // Sample 385 and midpoint between 385-476
+      [476, 477], // Sample 476 and midpoint between 476-477
+      [477, 474], // Sample 477 and midpoint between 477-474
+      [474], // Sample 474 alone
+    ] as const;
+
+    rightIrisIndicesWithMidpoints.forEach(([pointIndex, midpointWithIndex]) => {
+      // Sample from the main point
+      const point = landmarks[pointIndex]!;
+      const samples = this.sampleAreaColors(
+        point.x * this.canvas.width,
+        point.y * this.canvas.height,
+        this.IRIS_SAMPLE_RADIUS,
+        this.isValidIrisColor.bind(this)
+      );
+      rightIrisColors.push(...samples);
+
+      // If there's a second point to create midpoint with
+      if (midpointWithIndex !== undefined) {
+        const point2 = landmarks[midpointWithIndex]!;
+        const midpoint = this.calculateMidpoint(point, point2);
+
+        // Sample from the midpoint
+        const midpointSamples = this.sampleAreaColors(
+          midpoint.x * this.canvas.width,
+          midpoint.y * this.canvas.height,
+          this.IRIS_SAMPLE_RADIUS,
+          this.isValidIrisColor.bind(this)
+        );
+        rightIrisColors.push(...midpointSamples);
+      }
+    });
+
+    return rightIrisColors;
+  }
+
+  public calculateAverageColor(colors: RGB[]): RGB {
+    if (colors.length === 0) {
+      return { r: 0, g: 0, b: 0 };
+    }
+
+    const sum = colors.reduce(
+      (acc, color) => ({
+        r: acc.r + color.r,
+        g: acc.g + color.g,
+        b: acc.b + color.b,
+      }),
+      { r: 0, g: 0, b: 0 }
+    );
+
+    return {
+      r: Math.round(sum.r / colors.length),
+      g: Math.round(sum.g / colors.length),
+      b: Math.round(sum.b / colors.length),
+    };
+  }
+}
+
+function detectEyeColor(
+  image: ImageData,
+  landmarks: NormalizedLandmark[]
+): RGB {
+  const irisPoints = [474, 475, 477, 476]; // Right iris landmarks
+  const boundaryPoints = [385, 386, 380, 374]; // Upper boundary points
+  const pupilCenter = 473; // Pupil center landmark
+
+  return getIrisColor(
+    image,
+    landmarks,
+    irisPoints,
+    boundaryPoints,
+    pupilCenter
+  );
 }
