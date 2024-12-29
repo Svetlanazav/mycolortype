@@ -1,11 +1,4 @@
-import {
-  ImageSegmenter,
-  FilesetResolver,
-  ImageSegmenterResult,
-  FaceLandmarker,
-  type FaceLandmarkerResult,
-  DrawingUtils,
-} from "@mediapipe/tasks-vision";
+import { ImageSegmenterResult } from "@mediapipe/tasks-vision";
 import {
   colorizeImgMaskedObjects,
   colorizeMaskedObjects as colorizeVideoMaskedObjects,
@@ -15,317 +8,194 @@ import { analyzeImageCategoriesEnhanced as analyzeImageCategories } from "./avrc
 import { determineSeasonalPalette } from "./seasonanalysis";
 import { FaceColorAnalyzer } from "./facecolor";
 import { displayColorSwatches } from "./displaycolors";
+import {
+  loadImageSegmenter,
+  ImageSegmenterControl,
+} from "./colorize/ImageSegmenter";
+import { WebcamController } from "./colorize/WebcamController";
+import { assert } from "./colorize/assert";
+import { WebcamButton } from "./colorize/WebcamButton";
+import { drawBlendShapes } from "./colorize/drawBlendShapes";
+import { drawLandmarksOnCanvas } from "./colorize/drawLandmarksOnCanvas";
+import { img2canvas } from "./colorize/img2canvas";
 
-// Get DOM elements
-const video = document.getElementById("webcam") as HTMLVideoElement;
-const canvasElement = document.getElementById("canvas") as HTMLCanvasElement;
-const imageBlendShapes = document.getElementById("image-blend-shapes");
-const canvasCtx = canvasElement.getContext("2d");
-const demosSection: HTMLElement = document.getElementById("demos")!;
-let enableWebcamButton: HTMLButtonElement;
-let webcamRunning: Boolean = false;
-let runningMode: "IMAGE" | "VIDEO" = "IMAGE";
-let faceLandmarker: FaceLandmarker;
+main();
 
-let imageSegmenter: ImageSegmenter;
-let labels: Array<string>;
+function main() {
+  const ctrl = new ImageSegmenterControl("IMAGE");
+  loadImageSegmenter(ctrl);
+  const handleClick = init(ctrl);
 
-const createImageSegmenter = async () => {
-  const filesetresolver = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
-  );
+  const imageContainers: HTMLCollectionOf<Element> =
+    document.getElementsByClassName("segmentOnClick");
 
-  imageSegmenter = await ImageSegmenter.createFromOptions(filesetresolver, {
-    baseOptions: {
-      modelAssetPath:
-        "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite",
-      delegate: "GPU",
+  // Add click event listeners for the img elements.
+  for (let i = 0; i < imageContainers.length; i++) {
+    imageContainers[i]!.getElementsByTagName("img")![0]!.addEventListener(
+      "click",
+      handleClick
+    );
+  }
+
+  const webcamController = new WebcamController();
+
+  // Enable the live webcam view and start imageSegmentation.
+  WebcamButton({
+    onClick: async function enableCam(
+      this: HTMLButtonElement,
+      event: MouseEvent
+    ) {
+      if (!ctrl.loaded) {
+        return;
+      }
+      if (webcamController.webcamRunning === true) {
+        webcamController.webcamRunning = false;
+        this.innerText = "ENABLE SEGMENTATION";
+      } else {
+        webcamController.webcamRunning = true;
+        this.innerText = "DISABLE SEGMENTATION";
+      }
+      // Activate the webcam stream.
+      webcamController.init(
+        document.getElementById("webcam") as HTMLVideoElement
+      );
     },
-    runningMode: runningMode,
-    outputCategoryMask: true,
-    outputConfidenceMasks: false,
-  });
-  faceLandmarker = await FaceLandmarker.createFromOptions(filesetresolver, {
-    baseOptions: {
-      modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
-      delegate: "GPU",
-    },
-    outputFaceBlendshapes: true,
-    runningMode,
-    numFaces: 1,
   });
 
-  labels = imageSegmenter.getLabels();
-  demosSection.classList.remove("invisible");
-};
-createImageSegmenter();
-
-const imageContainers: HTMLCollectionOf<Element> =
-  document.getElementsByClassName("segmentOnClick");
-
-// Add click event listeners for the img elements.
-for (let i = 0; i < imageContainers.length; i++) {
-  imageContainers[i]!.getElementsByTagName("img")![0]!.addEventListener(
-    "click",
-    handleClick
-  );
-}
-
-/**
- * Demo 1: Segmented images on click and display results.
- */
-
-let canvasClick: HTMLCanvasElement;
-async function handleClick(event: any) {
-  // Do not segmented if imageSegmenter hasn't loaded
-  if (imageSegmenter === undefined) {
-    return;
-  }
-  canvasClick = event.target.parentElement.getElementsByTagName("canvas")[0];
-  canvasClick.classList.remove("removed");
-  canvasClick.width = event.target.naturalWidth;
-  canvasClick.height = event.target.naturalHeight;
-  const cxt = canvasClick.getContext("2d")!;
-  cxt.clearRect(0, 0, canvasClick.width, canvasClick.height);
-  cxt.drawImage(event.target, 0, 0, canvasClick.width, canvasClick.height);
-  event.target.style.opacity = 0;
-  // if VIDEO mode is initialized, set runningMode to IMAGE
-  if (runningMode === "VIDEO") {
-    runningMode = "IMAGE";
-    await imageSegmenter.setOptions({
-      runningMode: runningMode,
-    });
-  }
-
-  const { promise: imageSegmenterCallbackHasBeenCalled, resolve } =
-    Promise.withResolvers<void>();
-  // imageSegmenter.segment() when resolved will call the callback function.
-  imageSegmenter.segment(event.target, (result) => {
-    processImageSegmenterResult(result);
-    resolve();
-  });
-
-  await imageSegmenterCallbackHasBeenCalled;
-
-  const faceLandmarkerResult = faceLandmarker.detect(event.target);
-  processFaceLandmarkerResult(faceLandmarkerResult);
-
-  const canvas2 = document.createElement("canvas");
-  canvas2.width = event.target.naturalWidth;
-  canvas2.height = event.target.naturalHeight;
-  const cxt2 = canvas2.getContext("2d")!;
-  cxt2.clearRect(0, 0, canvas2.width, canvas2.height);
-  cxt2.drawImage(event.target, 0, 0, canvas2.width, canvas2.height);
-  document.body.appendChild(canvas2);
-  const colorAnalyzer = new FaceColorAnalyzer(canvas2, cxt2!);
-  const faceColors = colorAnalyzer.analyzeFaceColors(
-    faceLandmarkerResult.faceLandmarks[0]!
-  );
-  const container = document.getElementById("results-container");
-  displayColorSwatches(faceColors, container!);
-
-  // console.log("Face Colors:", {
-  //   leftIrisColor: `rgb(${faceColors.leftIris.r}, ${faceColors.leftIris.g}, ${faceColors.leftIris.b})`,
-  //   rightIrisColor: `rgb(${faceColors.rightIris.r}, ${faceColors.rightIris.g}, ${faceColors.rightIris.b})`,
-  //   lipsColor: `rgb(${faceColors.lips.r}, ${faceColors.lips.g}, ${faceColors.lips.b})`,
-  //   skinColor: `rgb(${faceColors.skin.r}, ${faceColors.skin.g}, ${faceColors.skin.b})`,
-  // });
-}
-
-function processFaceLandmarkerResult(result: FaceLandmarkerResult) {
-  result;
-  event.target!.parentNode.appendChild(canvasClick);
-  const ctx = canvasClick.getContext("2d");
-  const drawingUtils = new DrawingUtils(ctx!);
-  for (const landmarks of result.faceLandmarks) {
-    drawingUtils.drawConnectors(
-      landmarks,
-      FaceLandmarker.FACE_LANDMARKS_TESSELATION,
-      { color: "#C0C0C070", lineWidth: 1 }
-    );
-    drawingUtils.drawConnectors(
-      landmarks,
-      FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE,
-      { color: "#FF3030" }
-    );
-    drawingUtils.drawConnectors(
-      landmarks,
-      FaceLandmarker.FACE_LANDMARKS_RIGHT_EYEBROW,
-      { color: "#FF3030" }
-    );
-    drawingUtils.drawConnectors(
-      landmarks,
-      FaceLandmarker.FACE_LANDMARKS_LEFT_EYE,
-      { color: "#30FF30" }
-    );
-    drawingUtils.drawConnectors(
-      landmarks,
-      FaceLandmarker.FACE_LANDMARKS_LEFT_EYEBROW,
-      { color: "#30FF30" }
-    );
-    drawingUtils.drawConnectors(
-      landmarks,
-      FaceLandmarker.FACE_LANDMARKS_FACE_OVAL,
-      { color: "#E0E0E0" }
-    );
-    drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LIPS, {
-      color: "#E0E0E0",
-    });
-    drawingUtils.drawConnectors(
-      landmarks,
-      FaceLandmarker.FACE_LANDMARKS_RIGHT_IRIS,
-      { color: "#FF3030" }
-    );
-    drawingUtils.drawConnectors(
-      landmarks,
-      FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS,
-      { color: "#505F30" }
-    );
-  }
-  drawBlendShapes(imageBlendShapes!, result.faceBlendshapes);
-}
-
-function processImageSegmenterResult(result: ImageSegmenterResult) {
-  const cxt = canvasClick.getContext("2d")!;
-  const { width, height } = result.categoryMask;
-  let imageData = cxt.getImageData(0, 0, width, height).data;
-  canvasClick.width = width;
-  canvasClick.height = height;
-  const enhancedCategoryColors = analyzeImageCategories(
-    result,
-    new Uint8ClampedArray(imageData.buffer.slice(0))
-  );
-  window["img1"] = enhancedCategoryColors;
-  window["img_season"] = determineSeasonalPalette(enhancedCategoryColors);
-  const [uint8Array, category] = colorizeImgMaskedObjects(
-    result,
-    imageData,
-    labels
-  );
-  const dataNew = new ImageData(uint8Array, width, height);
-  cxt.putImageData(dataNew, 0, 0);
-  const p: HTMLElement =
-    event.target.parentNode.getElementsByClassName("classification")[0];
-  p.classList.remove("removed");
-  p.innerText = "Category: " + category;
-}
-
-function callbackForVideo(result: ImageSegmenterResult) {
-  let imageData = canvasCtx.getImageData(
-    0,
-    0,
-    video.videoWidth,
-    video.videoHeight
-  ).data;
-  const uint8Array = colorizeVideoMaskedObjects(
-    result,
-    new Uint8ClampedArray(imageData.buffer.slice(0))
-  );
-  window["colors"] = analyzeImageCategories(
-    result,
-    new Uint8ClampedArray(imageData.buffer.slice(0))
-  );
-  const dataNew = new ImageData(
-    new Uint8ClampedArray(imageData.buffer.slice(0)),
-    video.videoWidth,
-    video.videoHeight
-  );
-  canvasCtx.putImageData(dataNew, 0, 0);
-  if (webcamRunning === true) {
-    window.requestAnimationFrame(predictWebcam);
-  }
-}
-
-function drawBlendShapes(el: HTMLElement, blendShapes: any[]) {
-  if (!blendShapes.length) {
-    return;
-  }
-
-  console.log(blendShapes[0]);
-
-  let htmlMaker = "";
-  blendShapes[0].categories.map((shape) => {
-    htmlMaker += `
-      <li class="blend-shapes-item">
-        <span class="blend-shapes-label">${
-          shape.displayName || shape.categoryName
-        }</span>
-        <span class="blend-shapes-value" style="width: calc(${
-          +shape.score * 100
-        }% - 120px)">${(+shape.score).toFixed(4)}</span>
-      </li>
-    `;
-  });
-
-  el.innerHTML = htmlMaker;
-}
-/********************************************************************
-// Demo 2: Continuously grab image from webcam stream and segmented it.
-********************************************************************/
-
-// Check if webcam access is supported.
-function hasGetUserMedia() {
-  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-}
-
-// Get segmentation from the webcam
-let lastWebcamTime = -1;
-async function predictWebcam() {
-  if (video.currentTime === lastWebcamTime) {
-    if (webcamRunning === true) {
-      window.requestAnimationFrame(predictWebcam);
+  webcamController.addJob(async (video) => {
+    const canvasElement = document.getElementById(
+      "canvas"
+    ) as HTMLCanvasElement;
+    const canvasCtx = canvasElement.getContext("2d");
+    assert(canvasCtx !== null, "canvasCtx is null");
+    // draw the video frame to the canvas element
+    canvasCtx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    // Do not segmented if imageSegmenter hasn't loaded
+    if (!ctrl.loaded) {
+      return;
     }
-    return;
-  }
-  lastWebcamTime = video.currentTime;
-  canvasCtx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-  // Do not segmented if imageSegmenter hasn't loaded
-  if (imageSegmenter === undefined) {
-    return;
-  }
-  // if image mode is initialized, create a new segmented with video runningMode
-  if (runningMode === "IMAGE") {
-    runningMode = "VIDEO";
-    await imageSegmenter.setOptions({
-      runningMode: runningMode,
+    // Start segmenting the stream.
+    await ctrl.setRunningMode({
+      mode: "VIDEO",
+      videoFrame: video,
+      timestamp: performance.now(),
+      callback: (result: ImageSegmenterResult) => {
+        let imageData = canvasCtx.getImageData(
+          0,
+          0,
+          video.videoWidth,
+          video.videoHeight
+        ).data;
+        const uint8Array = colorizeVideoMaskedObjects(
+          result,
+          new Uint8ClampedArray(imageData.buffer.slice(0))
+        );
+        const state = window as { [key: string]: any };
+        state["colors"] = analyzeImageCategories(
+          result,
+          new Uint8ClampedArray(imageData.buffer.slice(0))
+        );
+        const dataNew = new ImageData(
+          new Uint8ClampedArray(imageData.buffer.slice(0)),
+          video.videoWidth,
+          video.videoHeight
+        );
+        canvasCtx.putImageData(dataNew, 0, 0);
+        if (webcamController.webcamRunning === true) {
+          window.requestAnimationFrame(webcamController.predictWebcam);
+        }
+      },
     });
-  }
-  let startTimeMs = performance.now();
-
-  // Start segmenting the stream.
-  imageSegmenter.segmentForVideo(video, startTimeMs, callbackForVideo);
+  });
 }
+function init(ctrl: ImageSegmenterControl) {
+  /**
+   * Demo 1: Segmented images on click and display results.
+   */
+  async function handleClick(this: HTMLImageElement, event: MouseEvent) {
+    const image = event.target as HTMLImageElement;
+    assert(image !== null, "event.target is not an HTMLImageElement");
+    if (!ctrl.loaded) {
+      return;
+    }
+    const canvasClick = image.parentElement!.getElementsByTagName("canvas")[0]!;
+    img2canvas(image, canvasClick);
+    canvasClick.classList.remove("removed");
+    image.style.opacity = "0";
 
-// Enable the live webcam view and start imageSegmentation.
-async function enableCam(event) {
-  if (imageSegmenter === undefined) {
-    return;
+    const { promise: imageSegmenterCallbackHasBeenCalled, resolve } =
+      Promise.withResolvers<void>();
+
+    await ctrl.setRunningMode({
+      mode: "IMAGE",
+      image: image,
+      callback: (result) => {
+        processImageSegmenterResult(event, canvasClick, result);
+        resolve();
+      },
+    });
+
+    await imageSegmenterCallbackHasBeenCalled;
+
+    const faceLandmarkerResult = ctrl.faceLandmarker.detect(image);
+    drawLandmarksOnCanvas(canvasClick, faceLandmarkerResult);
+    drawBlendShapes(
+      document.getElementById("image-blend-shapes")!,
+      faceLandmarkerResult.faceBlendshapes
+    );
+
+    const canvas2 = document.createElement("canvas");
+    img2canvas(image, canvas2);
+    document.body.appendChild(canvas2);
+    const cxt2 = canvas2.getContext("2d")!;
+    const colorAnalyzer = new FaceColorAnalyzer(canvas2, cxt2!);
+    const faceColors = colorAnalyzer.analyzeFaceColors(
+      faceLandmarkerResult.faceLandmarks[0]!
+    );
+    displayColorSwatches(
+      faceColors,
+      document.getElementById("results-container")!
+    );
+
+    // console.log("Face Colors:", {
+    //   leftIrisColor: `rgb(${faceColors.leftIris.r}, ${faceColors.leftIris.g}, ${faceColors.leftIris.b})`,
+    //   rightIrisColor: `rgb(${faceColors.rightIris.r}, ${faceColors.rightIris.g}, ${faceColors.rightIris.b})`,
+    //   lipsColor: `rgb(${faceColors.lips.r}, ${faceColors.lips.g}, ${faceColors.lips.b})`,
+    //   skinColor: `rgb(${faceColors.skin.r}, ${faceColors.skin.g}, ${faceColors.skin.b})`,
+    // });
   }
 
-  if (webcamRunning === true) {
-    webcamRunning = false;
-    enableWebcamButton.innerText = "ENABLE SEGMENTATION";
-  } else {
-    webcamRunning = true;
-    enableWebcamButton.innerText = "DISABLE SEGMENTATION";
+  function processImageSegmenterResult(
+    event: MouseEvent,
+    canvasClick: HTMLCanvasElement,
+    result: ImageSegmenterResult
+  ) {
+    const cxt = canvasClick.getContext("2d")!;
+    const { width, height } = result.categoryMask as {
+      width: number;
+      height: number;
+    };
+    let imageData = cxt.getImageData(0, 0, width, height).data;
+    canvasClick.width = width;
+    canvasClick.height = height;
+    const enhancedCategoryColors = analyzeImageCategories(
+      result,
+      new Uint8ClampedArray(imageData.buffer.slice(0))
+    );
+    const state = window as { [key: string]: any };
+    state["img1"] = enhancedCategoryColors;
+    state["img_season"] = determineSeasonalPalette(enhancedCategoryColors);
+    const [uint8Array, category] = colorizeImgMaskedObjects(
+      result,
+      imageData,
+      ctrl.imageSegmenter.getLabels()
+    );
+    cxt.putImageData(new ImageData(uint8Array, width, height), 0, 0);
+    const p = (
+      (event.target! as HTMLElement).parentNode! as HTMLElement
+    ).getElementsByClassName("classification")[0] as HTMLElement;
+    p.classList.remove("removed");
+    p.innerText = "Category: " + category;
   }
-
-  // getUsermedia parameters.
-  const constraints = {
-    video: true,
-  };
-
-  // Activate the webcam stream.
-  video.srcObject = await navigator.mediaDevices.getUserMedia(constraints);
-  video.addEventListener("loadeddata", predictWebcam);
-}
-
-// If webcam supported, add event listener to button.
-if (hasGetUserMedia()) {
-  enableWebcamButton = document.getElementById(
-    "webcamButton"
-  ) as HTMLButtonElement;
-  enableWebcamButton.addEventListener("click", enableCam);
-} else {
-  console.warn("getUserMedia() is not supported by your browser");
+  return handleClick;
 }
