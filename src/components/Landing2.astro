@@ -1,0 +1,63 @@
+<!-- Navigation -->
+<nav class="flex justify-between items-center p-6">
+  <div class="text-xl font-bold tracking-wider">FEATURES</div>
+  <div class="hidden md:flex space-x-8">
+    <a href="#" class="text-gray-600 hover:text-black">SPACE</a>
+    <a href="#" class="text-gray-600 hover:text-black">HOME</a>
+    <a href="#" class="text-gray-600 hover:text-black">GUIDE</a>
+    <a href="#" class="text-gray-600 hover:text-black">ARTIST</a>
+  </div>
+  <div class="flex items-center space-x-4">
+    <div class="w-6 h-6 bg-black rounded-full"></div>
+    <button
+      class="px-6 py-2 border border-gray-200 rounded-full hover:bg-gray-50"
+      >Custom</button
+    >
+    <button class="md:hidden">
+      <svg
+        class="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<section class="container mx-auto px-6 py-12">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+    <!-- Left Column -->
+    <div class="space-y-8">
+      <h1 class="text-5xl md:text-6xl font-bold leading-tight tracking-tight">
+        Discover Your<br />
+        Perfect<br />
+        Palette
+      </h1>
+      <p class="text-gray-600 text-lg max-w-md">
+        Discover your perfect palette & explore innovative color combinations
+        that make your designs stand out
+      </p>
+      <button
+        class="px-8 py-4 bg-black text-white rounded-full text-lg hover:bg-gray-800 transition-colors"
+      >
+        GET STARTED
+      </button>
+    </div>
+
+    <!-- Right Column - Image (hidden on mobile) -->
+    <div class="hidden lg:block">
+      <img
+        src="https://placeholder.com/600x600"
+        alt="Color Palette Illustration"
+        class="w-full h-auto rounded-3xl"
+      />
+    </div>
+  </div>
+</section>
