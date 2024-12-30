@@ -1,5 +1,6 @@
 import React, { useState, useRef, type ChangeEvent } from "react";
 import { Camera, Upload, X } from "lucide-react";
+import { AnalysisPreview } from "./AnalysisPreviewContainer";
 
 // Define types for component state
 type Step = 1 | 2 | 3;
@@ -120,6 +121,12 @@ const ImageUploadContainer: React.FC = () => {
     }
   };
 
+  const samplePalette = [
+    { hex: "#F5E6E8", name: "Soft Pink" },
+    { hex: "#D5C3C6", name: "Dusty Rose" },
+    { hex: "#B6A3A7", name: "Mauve" },
+    { hex: "#947276", name: "Rose Brown" },
+  ];
   return (
     <div className="w-full max-w-2xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -168,7 +175,7 @@ const ImageUploadContainer: React.FC = () => {
         </div>
 
         {/* Main content area */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           {isCameraActive ? (
             <div className="relative">
               <video
@@ -205,13 +212,76 @@ const ImageUploadContainer: React.FC = () => {
               )}
             </div>
           )}
+        </div> */}
+        {/* Main content area */}
+        <div className="mb-6">
+          {step === 1 && (
+            <div className="flex flex-col items-center justify-center min-h-[300px] border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+              {isCameraActive ? (
+                <div className="relative">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    className="w-full rounded-lg"
+                  />
+                  <button
+                    onClick={takePhoto}
+                    className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white px-6 py-2 rounded-full hover:bg-pink-600"
+                  >
+                    Take Photo
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {selectedImage ? (
+                    <img
+                      src={selectedImage}
+                      alt="Selected"
+                      className="max-h-[300px] rounded-lg object-contain"
+                    />
+                  ) : (
+                    <div className="text-center p-6">
+                      <div className="mb-4">
+                        <Upload size={48} className="mx-auto text-gray-400" />
+                      </div>
+                      <p className="text-gray-500 mb-2">
+                        Upload or take a photo
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        Supported formats: JPG, PNG
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {step === 2 && selectedImage && (
+            <div className="flex flex-col items-center justify-center min-h-[300px] border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+              <img
+                src={selectedImage}
+                alt="Selected"
+                className="max-h-[300px] rounded-lg object-contain"
+              />
+            </div>
+          )}
+
+          {step === 3 && (
+            <AnalysisPreview
+              seasonalStyle={"Spring"}
+              primaryColors={samplePalette}
+              accentColors={samplePalette}
+            />
+          )}
         </div>
 
         {/* Action buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => setShowModal(true)}
-            className="px-6 py-2 bg-accent-rose text-white rounded-full hover:bg-accent-sage transition-colors"
+            className="px-6 py-2 bg-accent-sage text-white rounded-full hover:bg-accent-rose transition-colors"
           >
             Upload Photo
           </button>
@@ -219,7 +289,7 @@ const ImageUploadContainer: React.FC = () => {
             onClick={startAnalysis}
             className={`px-6 py-2 rounded-full transition-colors ${
               selectedImage
-                ? "bg-accent-rose text-white hover:bg-accent-sage"
+                ? "bg-accent-sage  text-white hover:bg-accent-rose"
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
             disabled={!selectedImage}

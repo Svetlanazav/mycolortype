@@ -1,19 +1,18 @@
 ---
-// src/pages/blog/post-1.astro
-import MainLayout from "../../layouts/Layout.astro";
+import Layout from "../../layouts/Layout.astro";
 
 const post = {
   title: "Understanding Your Color Season: A Complete Guide",
   author: "Emma Anderson",
-  date: "March 15, 2024",
+  date: "December 15, 2024",
   readTime: "8 min read",
   category: "Color Analysis",
-  coverImage: "/api/placeholder/1200/600",
-  authorImage: "/api/placeholder/64/64",
+  coverImage: "public/pics/freepik__expand__84483.png",
+  authorImage: "public/pics/happywomen.jpeg",
 };
 ---
 
-<MainLayout title={post.title}>
+<Layout title={post.title}>
   <!-- Hero Section -->
   <div class="bg-gradient-to-r from-primary-sand to-white">
     <div class="container mx-auto px-4 py-12">
@@ -234,4 +233,4 @@ const post = {
       </div>
     </div>
   </div>
-</MainLayout>
+</Layout>
