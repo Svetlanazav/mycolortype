@@ -9,7 +9,7 @@ import CommentSection from "../components/Comments.astro";
     <h1 class="text-2xl font-bold">MyColorType</h1>
     <nav>
       <button class="md:hidden bg-primary-mauve p-2 rounded">Menu</button>
-      <ul class="hidden md:flex space-x-10 font-medium">
+      <ul class="hidden md:flex space-x-5 font-medium lg:space-x-10">
         <li>
           <a href="#startanalysis" class="hover:text-accent-gold"
             >How to start</a
@@ -21,7 +21,10 @@ import CommentSection from "../components/Comments.astro";
           >
         </li>
         <li><a href="#features" class="hover:text-accent-gold">Features</a></li>
-        <li><a href="#contact" class="hover:text-accent-gold">Contact</a></li>
+        <li><a href="/blog" class="hover:text-accent-gold">Blog</a></li>
+        <li>
+          <a href="#testimonials" class="hover:text-accent-gold">Reviews</a>
+        </li>
       </ul>
     </nav>
     <button
@@ -53,11 +56,16 @@ import CommentSection from "../components/Comments.astro";
           Transform your style with professional color analysis. Learn which
           colors make you look and feel your absolute best.
         </p>
-        <button
+        <!-- <button
           class="px-7 py-4 text-white rounded-full text-lg transition-colors bg-gradient-to-r from-accent-gold to-primary-plum hover:from-primary-mauve hover:to-primary-plum"
         >
           GET STARTED
-        </button>
+        </button> -->
+        <a
+          href="#imageupload"
+          class="px-7 py-4 inline-block text-white rounded-full text-lg transition-colors bg-gradient-to-r from-accent-gold to-primary-plum hover:from-primary-mauve hover:to-primary-plum"
+          >GET STARTED</a
+        >
       </div>
       <!-- Right Column - Image (bg on mobile) -->
       <!-- Mobile version -->
@@ -304,7 +312,7 @@ import CommentSection from "../components/Comments.astro";
   </svg>
 </div>
 <!-- ImageUploadContainer -->
-<section class="py-16 px-4">
+<section id="imageupload" class="py-16 px-4">
   <div class="container mx-auto max-w-4xl">
     <hgroup class="text-center">
       <h2 class="text-3xl md:text-4xl font-bold text-primary-plum mb-4">
