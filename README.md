@@ -2,9 +2,62 @@
 
 Personalized Color Analysis Tool
 
-![video](./example-face.mp4)
+## How it's done
+
+1. We use AI Recognition to identify:
+   - Hair, Face, Skin, Clothing and accessories, Eyes, Face Skin, Face Hair, Lips
+2. We take avg and dominant colors for each group and convert them to OKLCH color space.
+3. Then we compare them to create the color palette of the user's color type based on color harmony in OKLCH.
+
+### AI Recognition
+
+![video](./example-face.gif)
+
+Image Segmenter AI allows you to divide images into regions based on predefined categories. We use this feature to identify:
+
+- Hair
+- Face
+- Skin
+- Clothing and accessories
+
+Face Landmarker allows us to detect facial landmarks and facial expressions in images and video. We use this feature to identify:
+
+- Eyes
+- Face Skin
+- Face Hair
+- Lips
+
+### Color Analysis
+
+The basis of all color systems are three dimensions (see chart below according Munsell). Each color is described using the combination of three scales: value, hue (i.e. temperature) and chroma (i.e. saturation). This allows to act smart when it comes to exploring color choices.
+
+![Munsell](./munsell.png)
+
+But Munsell color space is incorrect.
+
+- It deform the color space.
+- It's not based on the human perception of color.
+- It uses calculations without Gamma correction.
+
+Look at example below. The red color is opposite to the green color. And it's wrong.
+
+![color theory](./color-theory.jpg)
+
+The red color is opposite to the teal/cyan color. This color space is based on the human perception of color:
+
+![oklh-weel](./oklh-weel.png)
+
+OKLCH doesn’t deform the space; it shows the real color space with all its complexity.
+
+So, we use OKLCH color space to analyze colors.
+
+## Table of Contents
 
 - [MyColorType](#mycolortype)
+  - [How it's done](#how-its-done)
+    - [AI Recognition](#ai-recognition)
+    - [Color Analysis](#color-analysis)
+  - [Table of Contents](#table-of-contents)
   - [**Product Requirements Document (PRD)**](#product-requirements-document-prd)
     - [**1. Objectives**](#1-objectives)
     - [**2. Target Users**](#2-target-users)
