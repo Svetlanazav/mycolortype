@@ -1,5 +1,7 @@
 # MyColorType
 
+![MyColorType](./cover.png)
+
 Personalized Color Analysis Tool
 
 ## How it's done
