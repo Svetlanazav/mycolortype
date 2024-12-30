@@ -279,23 +279,37 @@ const ImageUploadContainer: React.FC = () => {
 
         {/* Action buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            onClick={() => setShowModal(true)}
-            className="px-6 py-2 bg-accent-sage text-white rounded-full hover:bg-accent-rose transition-colors"
-          >
-            Upload Photo
-          </button>
-          <button
-            onClick={startAnalysis}
-            className={`px-6 py-2 rounded-full transition-colors ${
-              selectedImage
-                ? "bg-accent-sage  text-white hover:bg-accent-rose"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-            }`}
-            disabled={!selectedImage}
-          >
-            Start Analysis
-          </button>
+          {step === 3 && (
+            <>
+              <a
+                href="https://mycolortype.lemonsqueezy.com/buy/d961fc73-eba3-42d0-898f-aa0f25d67d03?embed=1"
+                className="lemonsqueezy-button inline-block px-6 py-2 bg-accent-sage text-white rounded-full hover:bg-accent-rose transition-colors"
+              >
+                Buy Personal Color Palette
+              </a>
+            </>
+          )}
+          {step !== 3 && (
+            <>
+              <button
+                onClick={() => setShowModal(true)}
+                className="px-6 py-2 bg-accent-sage text-white rounded-full hover:bg-accent-rose transition-colors"
+              >
+                Upload Photo
+              </button>
+              <button
+                onClick={startAnalysis}
+                className={`px-6 py-2 rounded-full transition-colors ${
+                  selectedImage
+                    ? "bg-accent-sage  text-white hover:bg-accent-rose"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
+                disabled={!selectedImage}
+              >
+                Start Analysis
+              </button>
+            </>
+          )}
         </div>
 
         {/* Upload modal */}
