@@ -1,0 +1,141 @@
+<!-- Comment Section -->
+<section
+  id="testimonials"
+  class="relative bg-white text-primary-plum py-16 px-4"
+>
+  <!-- Decorative background elements -->
+  <div class="absolute inset-0 overflow-hidden">
+    <div
+      class="absolute -right-10 top-10 w-72 h-72 bg-primary-sand/30 rounded-full blur-3xl"
+    >
+    </div>
+    <div
+      class="absolute -left-10 bottom-10 w-72 h-72 bg-accent-rose/20 rounded-full blur-3xl"
+    >
+    </div>
+  </div>
+
+  <!-- Main content container -->
+  <div class="container mx-auto max-w-6xl relative">
+    <!-- Section header with decorative elements -->
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">What Our Users Say</h2>
+      <div class="w-24 h-1 bg-accent-gold mx-auto"></div>
+    </div>
+
+    <!-- Comment grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Testimonial 1 -->
+      <div
+        class="group bg-primary-sand rounded-2xl p-8 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+      >
+        <!-- Quote icon -->
+        <div class="mb-6">
+          <svg
+            class="w-10 h-10 text-accent-gold opacity-50"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M11.192 15.757c0-.88-.23-1.618-.69-2.217-.326-.412-.768-.683-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16-.95.1-1.956.76-3.022.66-1.065 1.515-1.867 2.558-2.403L9.373 5c-.8.396-1.56.898-2.26 1.505-.71.607-1.34 1.305-1.9 2.094s-.98 1.68-1.25 2.69-.346 2.04-.217 3.1c.168 1.4.62 2.52 1.356 3.35.735.84 1.652 1.26 2.748 1.26.965 0 1.766-.29 2.4-.878.628-.576.94-1.365.94-2.368l.002.003zm9.124 0c0-.88-.23-1.618-.69-2.217-.326-.42-.77-.692-1.327-.817-.56-.124-1.074-.13-1.54-.022-.16-.94.09-1.95.75-3.02.66-1.06 1.514-1.86 2.557-2.4L18.49 5c-.8.396-1.555.898-2.26 1.505-.708.607-1.34 1.305-1.894 2.094-.556.79-.97 1.68-1.24 2.69-.273 1-.345 2.04-.217 3.1.168 1.4.62 2.52 1.356 3.35.735.84 1.652 1.26 2.748 1.26.965 0 1.766-.29 2.4-.878.628-.576.94-1.365.94-2.368l.002.003z"
+            ></path>
+          </svg>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-center gap-4 mb-6">
+          <!-- User avatar -->
+          <div class="flex-shrink-0">
+            <img
+              src="public/pics/wom.jpeg"
+              alt="Alexa D."
+              class="w-16 h-16 rounded-full object-cover border-2 border-accent-gold shadow-md"
+            />
+          </div>
+          <!-- User info -->
+          <div>
+            <h4 class="font-bold text-lg text-primary-plum">Alexa Davidson</h4>
+            <p class="text-primary-mauve text-sm">Fashion Blogger</p>
+          </div>
+        </div>
+
+        <!-- Comment text -->
+        <p class="text-primary-mauve text-lg leading-relaxed mb-4">
+          "This tool completely transformed my approach to styling! The color
+          recommendations are incredibly accurate, and I've received so many
+          compliments since implementing them into my wardrobe."
+        </p>
+
+        <!-- Rating stars -->
+        <div class="flex items-center gap-1">
+          {
+            [...Array(5)].map(() => (
+              <svg
+                class="w-5 h-5 text-accent-gold"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            ))
+          }
+        </div>
+      </div>
+
+      <!-- Comment 2 -->
+      <div
+        class="group bg-accent-rose/20 rounded-2xl p-8 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+      >
+        <!-- Quote icon -->
+        <div class="mb-6">
+          <svg
+            class="w-10 h-10 text-accent-gold opacity-50"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M11.192 15.757c0-.88-.23-1.618-.69-2.217-.326-.412-.768-.683-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16-.95.1-1.956.76-3.022.66-1.065 1.515-1.867 2.558-2.403L9.373 5c-.8.396-1.56.898-2.26 1.505-.71.607-1.34 1.305-1.9 2.094s-.98 1.68-1.25 2.69-.346 2.04-.217 3.1c.168 1.4.62 2.52 1.356 3.35.735.84 1.652 1.26 2.748 1.26.965 0 1.766-.29 2.4-.878.628-.576.94-1.365.94-2.368l.002.003zm9.124 0c0-.88-.23-1.618-.69-2.217-.326-.42-.77-.692-1.327-.817-.56-.124-1.074-.13-1.54-.022-.16-.94.09-1.95.75-3.02.66-1.06 1.514-1.86 2.557-2.4L18.49 5c-.8.396-1.555.898-2.26 1.505-.708.607-1.34 1.305-1.894 2.094-.556.79-.97 1.68-1.24 2.69-.273 1-.345 2.04-.217 3.1.168 1.4.62 2.52 1.356 3.35.735.84 1.652 1.26 2.748 1.26.965 0 1.766-.29 2.4-.878.628-.576.94-1.365.94-2.368l.002.003z"
+            ></path>
+          </svg>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-center gap-4 mb-6">
+          <!-- User avatar -->
+          <div class="flex-shrink-0">
+            <img
+              src="public/pics/close-up-beautiful-girl-portrait.jpg"
+              alt="Sarah K."
+              class="w-16 h-16 rounded-full object-cover border-2 border-accent-gold shadow-md"
+            />
+          </div>
+          <!-- User info -->
+          <div>
+            <h4 class="font-bold text-lg text-primary-plum">Sarah Kim</h4>
+            <p class="text-primary-mauve text-sm">Brand Strategist</p>
+          </div>
+        </div>
+
+        <!-- Comment text -->
+        <p class="text-primary-mauve text-lg leading-relaxed mb-4">
+          "The color recommendations were spot-on for my brand! Not only did it
+          help with my personal style, but it also influenced our company's
+          visual identity in the most positive way."
+        </p>
+
+        <!-- Rating stars -->
+        <div class="flex items-center gap-1">
+          {
+            [...Array(5)].map(() => (
+              <svg
+                class="w-5 h-5 text-accent-gold"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

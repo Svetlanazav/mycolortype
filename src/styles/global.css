@@ -72,3 +72,58 @@ code {
 body {
   font-family: "Space Grotesk", sans-serif;
 }
+
+.custom-shape-divider-bottom-1735495185 {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  transform: rotate(180deg);
+}
+
+.custom-shape-divider-bottom-1735495185 svg {
+  position: relative;
+  display: block;
+  width: calc(101% + 1.3px);
+  height: 82px;
+}
+
+.custom-shape-divider-bottom-1735495185 .shape-fill {
+  fill: #fdf2f8;
+}
+.custom-shape-divider-top-1735495376 {
+  position: absolute;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.custom-shape-divider-top-1735495376 svg {
+  position: relative;
+  display: block;
+  width: calc(101% + 1.3px);
+  height: 82px;
+}
+
+.custom-shape-divider-top-1735509263 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  transform: rotate(180deg);
+}
+
+.custom-shape-divider-top-1735509263 svg {
+  position: relative;
+  display: block;
+  width: calc(100% + 1.3px);
+  height: 32px;
+}
+
+.custom-shape-divider-top-1735509263 .shape-fill {
+  fill: #ffffff;
+}

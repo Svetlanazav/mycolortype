@@ -1,25 +1,237 @@
+---
+// src/pages/blog/post-1.astro
+import MainLayout from "../../layouts/Layout.astro";
 
-<article class="relative isolate flex flex-col justify-end overflow-hidden rounded-2xl bg-gray-900 px-8 pb-8 pt-80 sm:pt-48 lg:pt-80">
-  <img src="https://images.unsplash.com/photo-1496128858413-b36217c2ce36?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3603&q=80" alt="" class="absolute inset-0 -z-10 size-full object-cover">
-  <div class="absolute inset-0 -z-10 bg-gradient-to-t from-gray-900 via-gray-900/40"></div>
-  <div class="absolute inset-0 -z-10 rounded-2xl ring-1 ring-inset ring-gray-900/10"></div>
+const post = {
+  title: "Understanding Your Color Season: A Complete Guide",
+  author: "Emma Anderson",
+  date: "March 15, 2024",
+  readTime: "8 min read",
+  category: "Color Analysis",
+  coverImage: "/api/placeholder/1200/600",
+  authorImage: "/api/placeholder/64/64",
+};
+---
 
-  <div class="flex flex-wrap items-center gap-y-1 overflow-hidden text-sm/6 text-gray-300">
-    <time datetime="2020-03-16" class="mr-8">Mar 16, 2020</time>
-    <div class="-ml-4 flex items-center gap-x-4">
-      <svg viewBox="0 0 2 2" class="-ml-0.5 size-0.5 flex-none fill-white/50">
-        <circle cx="1" cy="1" r="1" />
-      </svg>
-      <div class="flex gap-x-2.5">
-        <img src="https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" class="size-6 flex-none rounded-full bg-white/10">
-        Michael Foster
+<MainLayout title={post.title}>
+  <!-- Hero Section -->
+  <div class="bg-gradient-to-r from-primary-sand to-white">
+    <div class="container mx-auto px-4 py-12">
+      <!-- Breadcrumbs -->
+      <nav class="mb-8">
+        <ol class="flex items-center space-x-2 text-sm">
+          <li>
+            <a href="/" class="text-primary-mauve hover:text-accent-gold"
+              >Home</a
+            >
+          </li>
+          <li class="text-primary-mauve">/</li>
+          <li>
+            <a href="/blog" class="text-primary-mauve hover:text-accent-gold"
+              >Blog</a
+            >
+          </li>
+          <li class="text-primary-mauve">/</li>
+          <li class="text-primary-plum">Current Post</li>
+        </ol>
+      </nav>
+
+      <!-- Post Header -->
+      <div class="max-w-4xl mx-auto text-center">
+        <span
+          class="inline-block px-4 py-1 mb-4 text-sm font-medium rounded-full bg-accent-rose/20 text-primary-plum"
+        >
+          {post.category}
+        </span>
+        <h1
+          class="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-plum mb-6"
+        >
+          {post.title}
+        </h1>
+
+        <!-- Author and Meta Info -->
+        <div class="flex items-center justify-center space-x-6 mb-8">
+          <div class="flex items-center">
+            <img
+              src={post.authorImage}
+              alt={post.author}
+              class="w-10 h-10 rounded-full border-2 border-accent-gold mr-3"
+            />
+            <span class="text-primary-mauve">{post.author}</span>
+          </div>
+          <span class="text-primary-mauve">|</span>
+          <span class="text-primary-mauve">{post.date}</span>
+          <span class="text-primary-mauve">|</span>
+          <span class="text-primary-mauve">{post.readTime}</span>
+        </div>
       </div>
     </div>
   </div>
-  <h3 class="mt-3 text-lg/6 font-semibold text-white">
-    <a href="#">
-      <span class="absolute inset-0"></span>
-      Boost your conversion rate
-    </a>
-  </h3>
-</article>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 py-12">
+    <div class="max-w-4xl mx-auto">
+      <!-- Featured Image -->
+      <div class="mb-12 rounded-2xl overflow-hidden shadow-xl">
+        <img
+          src={post.coverImage}
+          alt="Blog post cover"
+          class="w-full h-auto"
+        />
+      </div>
+
+      <!-- Article Content -->
+      <article class="prose prose-lg max-w-none">
+        <div class="text-primary-plum leading-relaxed">
+          <p class="text-lg mb-6">
+            Understanding your color season is like discovering a new language –
+            one that speaks directly to your natural beauty. In this
+            comprehensive guide, we'll explore how to identify your color season
+            and use it to enhance your personal style.
+          </p>
+
+          <h2 class="text-2xl font-bold text-primary-plum mt-12 mb-6">
+            What Are Color Seasons?
+          </h2>
+          <p class="mb-6">
+            Color seasons are based on the natural harmony between your skin
+            tone, hair color, and eye color. Just as nature has its seasons,
+            each person's coloring falls into one of four seasonal categories:
+            Spring, Summer, Autumn, or Winter.
+          </p>
+
+          <!-- Content sections with custom styling -->
+          <div class="bg-primary-sand/30 rounded-xl p-8 my-8">
+            <h3 class="text-xl font-bold text-primary-plum mb-4">
+              Quick Tips for Identifying Your Season
+            </h3>
+            <ul class="space-y-3 text-primary-mauve">
+              <li class="flex items-start">
+                <span
+                  class="inline-block w-4 h-4 mt-1 mr-2 rounded-full bg-accent-gold"
+                ></span>
+                Look at your skin's undertone
+              </li>
+              <li class="flex items-start">
+                <span
+                  class="inline-block w-4 h-4 mt-1 mr-2 rounded-full bg-accent-gold"
+                ></span>
+                Consider your natural hair color
+              </li>
+              <li class="flex items-start">
+                <span
+                  class="inline-block w-4 h-4 mt-1 mr-2 rounded-full bg-accent-gold"
+                ></span>
+                Examine your eye color pattern
+              </li>
+            </ul>
+          </div>
+
+          <!-- Quote Block -->
+          <blockquote
+            class="border-l-4 border-accent-gold pl-6 my-8 italic text-primary-mauve"
+          >
+            "Understanding your color season isn't about limiting your choices –
+            it's about empowering you to make confident color decisions that
+            enhance your natural beauty."
+          </blockquote>
+
+          <!-- Additional Content Section -->
+          <h2 class="text-2xl font-bold text-primary-plum mt-12 mb-6">
+            How to Use Your Color Season
+          </h2>
+          <p class="mb-6">
+            Once you've identified your color season, you can use this knowledge
+            to:
+          </p>
+
+          <!-- Feature Grid -->
+          <div class="grid md:grid-cols-2 gap-6 my-8">
+            <div class="bg-white p-6 rounded-xl shadow-md">
+              <h4 class="font-bold text-accent-gold mb-2">Wardrobe Planning</h4>
+              <p class="text-primary-mauve">
+                Create a cohesive wardrobe that works perfectly with your
+                natural coloring
+              </p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md">
+              <h4 class="font-bold text-accent-gold mb-2">Makeup Selection</h4>
+              <p class="text-primary-mauve">
+                Choose makeup colors that enhance rather than overwhelm your
+                features
+              </p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Share and Tags Section -->
+      <div class="border-t border-primary-sand mt-12 pt-8">
+        <div class="flex flex-wrap items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <span class="text-primary-plum font-medium">Share:</span>
+            <!-- Social Share Buttons -->
+            <button
+              class="p-2 rounded-full bg-primary-sand hover:bg-accent-gold hover:text-white transition-colors"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"
+                ></path>
+              </svg>
+            </button>
+            <button
+              class="p-2 rounded-full bg-primary-sand hover:bg-accent-gold hover:text-white transition-colors"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
+                ></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Tags -->
+          <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+            <span
+              class="px-3 py-1 text-sm rounded-full bg-primary-sand text-primary-plum"
+            >
+              Color Analysis
+            </span>
+            <span
+              class="px-3 py-1 text-sm rounded-full bg-primary-sand text-primary-plum"
+            >
+              Style Tips
+            </span>
+            <span
+              class="px-3 py-1 text-sm rounded-full bg-primary-sand text-primary-plum"
+            >
+              Personal Image
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Author Bio -->
+      <div class="bg-primary-sand/30 rounded-2xl p-8 mt-12">
+        <div class="flex items-start space-x-6">
+          <img
+            src={post.authorImage}
+            alt={post.author}
+            class="w-16 h-16 rounded-full border-2 border-accent-gold"
+          />
+          <div>
+            <h3 class="text-xl font-bold text-primary-plum mb-2">
+              {post.author}
+            </h3>
+            <p class="text-primary-mauve">
+              Color analyst and style consultant with over 10 years of
+              experience helping people discover their perfect color palette.
+              Certified by the International Color Analysis Association.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</MainLayout>
