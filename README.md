@@ -1,4 +1,36 @@
-### **Product Requirements Document (PRD)**
+# MyColorType
+
+Personalized Color Analysis Tool
+
+![video](./example-face.mp4)
+
+- [MyColorType](#mycolortype)
+  - [**Product Requirements Document (PRD)**](#product-requirements-document-prd)
+    - [**1. Objectives**](#1-objectives)
+    - [**2. Target Users**](#2-target-users)
+    - [**3. Must-Have Features**](#3-must-have-features)
+      - [**Core Features**](#core-features)
+      - [**Basic Functionality**](#basic-functionality)
+    - [**4. Optional Future Features**](#4-optional-future-features)
+    - [**5. Success Metrics**](#5-success-metrics)
+    - [**6. Technical Requirements**](#6-technical-requirements)
+    - [**7. User Flow Overview**](#7-user-flow-overview)
+    - [**8. Development Timeline (High-Level)**](#8-development-timeline-high-level)
+    - [**9. Summary**](#9-summary)
+    - [**Detailed Technical Requirements**](#detailed-technical-requirements)
+      - [**1. Face Detection and Color Analysis**](#1-face-detection-and-color-analysis)
+      - [**2. Data Storage and Management**](#2-data-storage-and-management)
+      - [**3. Front-End Development**](#3-front-end-development)
+      - [**4. Back-End Development**](#4-back-end-development)
+      - [**5. User Authentication**](#5-user-authentication)
+      - [**6. Security and Privacy**](#6-security-and-privacy)
+      - [**7. Data Privacy and Compliance**](#7-data-privacy-and-compliance)
+      - [**8. Performance and Optimization**](#8-performance-and-optimization)
+      - [**9. Testing Requirements**](#9-testing-requirements)
+    - [**Cookies**](#cookies)
+    - [**Analytics**](#analytics)
+
+## **Product Requirements Document (PRD)**
 
 **Product Name:**  
 MyColorType – Personalized Color Analysis Tool
@@ -57,19 +89,19 @@ MyColorType empowers users to discover their best colors by analyzing skin tone,
 
 #### **Basic Functionality**
 
-5. **User Authentication**
+1. **User Authentication**
    - **Description:** Users can create and log into an account to save their color profiles.
    - **Requirements:**
      - Allow for account creation via email, social login, or third-party authentication.
      - Store user data securely with password encryption.
      - Optional: Allow guest access with limited functionality (e.g., unable to save results).
-6. **Results Display**
+2. **Results Display**
    - **Description:** Display the results page with the generated color palette and analysis summary.
    - **Requirements:**
      - Show the uploaded photo next to the color palette for reference.
      - Include a summary explaining the user's color type and how it complements their features.
      - Provide an option to download or share the results.
-7. **Profile and History**
+3. **Profile and History**
    - **Description:** Allow logged-in users to save and view previous color analyses.
    - **Requirements:**
      - Store each saved analysis, showing date and photo used.
