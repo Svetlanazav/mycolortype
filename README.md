@@ -1,5 +1,7 @@
 # MyColorType
 
+#### Video Demo: https://youtu.be/2mWeymRAa84
+
 ![MyColorType](./cover.png)
 
 Personalized Color Analysis Tool
@@ -138,7 +140,7 @@ This project combines the power of modern web development frameworks and advance
 
 ## Table of Contents
 
-- [MyColorType](#mycolortype)
+- [MyColorType](#mycolortype) - [Video Demo: https://youtu.be/2mWeymRAa84](#video-demo-httpsyoutube2mweymraa84)
   - [How it's done](#how-its-done)
     - [AI Recognition](#ai-recognition)
     - [Color Analysis](#color-analysis)
