@@ -21,7 +21,9 @@ import CommentSection from "../components/Comments.astro";
           >
         </li>
         <li><a href="#features" class="hover:text-accent-gold">Features</a></li>
-        <li><a href="blog" class="hover:text-accent-gold">Blog</a></li>
+        <li>
+          <a href="/mycolortype/blog" class="hover:text-accent-gold">Blog</a>
+        </li>
         <li>
           <a href="#testimonials" class="hover:text-accent-gold">Reviews</a>
         </li>
@@ -71,7 +73,7 @@ import CommentSection from "../components/Comments.astro";
       <!-- Mobile version -->
       <div class="absolute inset-0 block md:hidden z-0">
         <img
-          src="pics/AI_color.jpg"
+          src="/mycolortype/pics/AI_color.jpg"
           alt="Color Palette Illustration"
           class="absolute inset-0 h-auto transform scale-x-[-1] translate-x-1/2 opacity-50 m-auto"
         />
@@ -79,7 +81,7 @@ import CommentSection from "../components/Comments.astro";
       <!-- Desktop version -->
       <div class="hidden md:block">
         <img
-          src="pics/AI_color.jpg"
+          src="/mycolortype/pics/AI_color.jpg"
           alt="Color Palette Illustration"
           class="w-full h-auto rounded-3xl"
         />
@@ -340,7 +342,7 @@ import CommentSection from "../components/Comments.astro";
       >
         <img
           class="h-96 w-full flex-none rounded-2xl object-cover shadow-xl lg:aspect-square lg:h-auto lg:max-w-sm"
-          src="pics/happywomen.jpeg"
+          src="/mycolortype/pics/happywomen.jpeg"
           alt="Happy woman smiling around beautiful colors"
         />
         <div class="w-full flex-auto">
@@ -350,7 +352,10 @@ import CommentSection from "../components/Comments.astro";
             color, and hair.
           </p>
           <div class="mt-10 flex">
-            <a href="blog" class="text-sm/6 font-semibold text-accent-gold">
+            <a
+              href="/mycolortype/blog"
+              class="text-sm/6 font-semibold text-accent-gold"
+            >
               Read more in our blog <span aria-hidden="true">&rarr;</span>
             </a>
           </div>
@@ -389,7 +394,7 @@ import CommentSection from "../components/Comments.astro";
         <div class="text-primary-mauve mb-6">
           <img
             class="w-24 h-24 mx-auto rounded opacity-90"
-            src="icons/thinking.png"
+            src="/mycolortype/icons/thinking.png"
             alt="AI Analysis Icon"
           />
         </div>
@@ -407,7 +412,7 @@ import CommentSection from "../components/Comments.astro";
         <div class="text-primary-mauve mb-6">
           <img
             class="w-24 h-24 mx-auto rounded opacity-90"
-            src="icons/loved.png"
+            src="/mycolortype/icons/loved.png"
             alt="Personalization Icon"
           />
         </div>
@@ -427,7 +432,7 @@ import CommentSection from "../components/Comments.astro";
         <div class="text-primary-mauve mb-6">
           <img
             class="w-24 h-24 mx-auto rounded opacity-90"
-            src="icons/ranking.png"
+            src="/mycolortype/icons/ranking.png"
             alt="Easy Use Icon"
           />
         </div>
