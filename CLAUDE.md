@@ -26,6 +26,8 @@
 - Test ideas before implementing
 - Document decisions after finishing tasks in `plans/` folder + brief commit message
 - Never add `Co-Authored-By` to commit messages
+- After every change, commit automatically using Conventional Commits format: `type(scope): description` (lower-case, max 72 chars). Types: `feat`, `fix`, `refactor`, `style`, `chore`, `docs`, `test`, `perf`
+- When asked to "запомни" — write the rule to CLAUDE.md, not to memory files
 
 ## Markdown formatting (MD022/MD032)
 
