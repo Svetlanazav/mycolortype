@@ -126,10 +126,14 @@ function init(ctrl: ImageSegmenterControl) {
     canvasClick.classList.remove("removed");
     image.style.opacity = "0";
 
-    window.dispatchEvent(new CustomEvent("analysis:start"));
-
     const { promise: imageSegmenterCallbackHasBeenCalled, resolve } =
       Promise.withResolvers<void>();
+
+    window.dispatchEvent(
+      new CustomEvent("analysis:start", {
+        detail: { types: ["img1", "img_season"] },
+      })
+    );
 
     await ctrl.setRunningMode({
       mode: "IMAGE",
@@ -151,7 +155,6 @@ function init(ctrl: ImageSegmenterControl) {
 
     const canvas2 = document.createElement("canvas");
     img2canvas(image, canvas2);
-    document.body.appendChild(canvas2);
     const cxt2 = canvas2.getContext("2d")!;
     const colorAnalyzer = new FaceColorAnalyzer(canvas2, cxt2!);
     const faceColors = colorAnalyzer.analyzeFaceColors(
@@ -176,6 +179,9 @@ function init(ctrl: ImageSegmenterControl) {
     result: ImageSegmenterResult
   ) {
     const cxt = canvasClick.getContext("2d")!;
+    if (!result.categoryMask) {
+      return;
+    }
     const { width, height } = result.categoryMask as {
       width: number;
       height: number;

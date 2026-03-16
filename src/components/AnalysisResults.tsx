@@ -22,8 +22,11 @@ export function AnalysisResults({ type }: { type: string }) {
   const [status, setStatus] = useState<Status>("idle");
 
   useEffect(() => {
-    function onStart() {
-      setStatus("loading");
+    function onStart(e: Event) {
+      const types = (e as CustomEvent<{ types: string[] }>).detail?.types;
+      if (!types || types.includes(type)) {
+        setStatus("loading");
+      }
     }
     function onResult(e: Event) {
       const detail = (e as CustomEvent<Record<string, ColorAnalysis>>).detail;

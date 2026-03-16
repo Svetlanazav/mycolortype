@@ -40,14 +40,14 @@ export class ImageSegmenterControl {
           callback: ImageSegmenterCallback;
         }
   ) {
-    if (this.runningMode === options.mode) return;
-    const mode = options.mode;
-    this._runningMode = mode;
-
-    await Promise.all([
-      this.imageSegmenter.setOptions({ runningMode: mode }),
-      this.faceLandmarker.setOptions({ runningMode: mode }),
-    ]);
+    // Only update setOptions when mode actually changes — never skip the segment call itself.
+    if (this.runningMode !== options.mode) {
+      this._runningMode = options.mode;
+      await Promise.all([
+        this.imageSegmenter.setOptions({ runningMode: options.mode }),
+        this.faceLandmarker.setOptions({ runningMode: options.mode }),
+      ]);
+    }
 
     switch (options.mode) {
       case "IMAGE": {
