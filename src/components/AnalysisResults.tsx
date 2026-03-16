@@ -15,25 +15,54 @@ function luminance(r: number, g: number, b: number): number {
   return 0.299 * r + 0.587 * g + 0.114 * b;
 }
 
+type Status = "idle" | "loading" | "done";
+
 export function AnalysisResults({ type }: { type: string }) {
   const [colors, setColors] = useState<[string, ColorAnalysis][]>([]);
+  const [status, setStatus] = useState<Status>("idle");
 
   useEffect(() => {
-    function onEvent(e: Event) {
+    function onStart() {
+      setStatus("loading");
+    }
+    function onResult(e: Event) {
       const detail = (e as CustomEvent<Record<string, ColorAnalysis>>).detail;
       setColors(
         Object.entries(detail).map(
           ([key, value]) => [key, value] as [string, ColorAnalysis]
         )
       );
+      setStatus("done");
     }
-    window.addEventListener(`analysis:${type}`, onEvent);
-    return () => window.removeEventListener(`analysis:${type}`, onEvent);
+    window.addEventListener("analysis:start", onStart);
+    window.addEventListener(`analysis:${type}`, onResult);
+    return () => {
+      window.removeEventListener("analysis:start", onStart);
+      window.removeEventListener(`analysis:${type}`, onResult);
+    };
   }, [type]);
 
-  if (colors.length === 0) {
+  if (status === "idle") {
     return (
-      <p className="text-gray-400 text-sm italic">Waiting for analysis…</p>
+      <div className="flex flex-col items-center gap-2 py-4 text-center">
+        <p className="text-gray-500 text-sm">Click the photo to see color breakdown</p>
+      </div>
+    );
+  }
+
+  if (status === "loading") {
+    return (
+      <div className="flex flex-col gap-3 w-full max-w-sm">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="rounded-xl overflow-hidden flex items-stretch h-16 animate-pulse">
+            <div className="w-16 shrink-0 bg-gray-700" />
+            <div className="bg-gray-800 flex-1 px-4 py-3 flex flex-col gap-2 justify-center">
+              <div className="h-2.5 bg-gray-700 rounded w-24" />
+              <div className="h-1.5 bg-gray-700 rounded w-full" />
+            </div>
+          </div>
+        ))}
+      </div>
     );
   }
 

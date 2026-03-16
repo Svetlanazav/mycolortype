@@ -15,21 +15,50 @@ const LABEL: Record<string, string> = {
   value: "Value",
 };
 
+type Status = "idle" | "loading" | "done";
+
 export function SeasonResults({ type }: { type: string }) {
   const [data, setData] = useState<SeasonalCharacteristics | null>(null);
+  const [status, setStatus] = useState<Status>("idle");
 
   useEffect(() => {
-    function onEvent(e: Event) {
-      setData((e as CustomEvent<SeasonalCharacteristics>).detail);
+    function onStart() {
+      setStatus("loading");
     }
-    window.addEventListener(`analysis:${type}`, onEvent);
-    return () => window.removeEventListener(`analysis:${type}`, onEvent);
+    function onResult(e: Event) {
+      setData((e as CustomEvent<SeasonalCharacteristics>).detail);
+      setStatus("done");
+    }
+    window.addEventListener("analysis:start", onStart);
+    window.addEventListener(`analysis:${type}`, onResult);
+    return () => {
+      window.removeEventListener("analysis:start", onStart);
+      window.removeEventListener(`analysis:${type}`, onResult);
+    };
   }, [type]);
 
-  if (!data) {
+  if (status === "idle") {
     return (
-      <p className="text-gray-400 text-sm italic">Waiting for analysis…</p>
+      <div className="flex flex-col items-center gap-2 py-6 text-center">
+        <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-xl">
+          🖼️
+        </div>
+        <p className="text-gray-400 text-sm">Click the photo to start analysis</p>
+      </div>
     );
+  }
+
+  if (status === "loading") {
+    return (
+      <div className="flex flex-col items-center gap-3 py-6">
+        <div className="w-8 h-8 rounded-full border-2 border-gray-600 border-t-white animate-spin" />
+        <p className="text-gray-400 text-sm">Analysing your colors…</p>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return null;
   }
 
   const { season, subSeason, characteristics, confidence } = data;

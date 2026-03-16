@@ -126,6 +126,8 @@ function init(ctrl: ImageSegmenterControl) {
     canvasClick.classList.remove("removed");
     image.style.opacity = "0";
 
+    window.dispatchEvent(new CustomEvent("analysis:start"));
+
     const { promise: imageSegmenterCallbackHasBeenCalled, resolve } =
       Promise.withResolvers<void>();
 
