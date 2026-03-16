@@ -90,10 +90,13 @@ function main() {
           result,
           new Uint8ClampedArray(imageData.buffer.slice(0))
         );
-        const state = window as { [key: string]: any };
-        state["colors"] = analyzeImageCategories(
-          result,
-          new Uint8ClampedArray(imageData.buffer.slice(0))
+        window.dispatchEvent(
+          new CustomEvent("analysis:colors", {
+            detail: analyzeImageCategories(
+              result,
+              new Uint8ClampedArray(imageData.buffer.slice(0))
+            ),
+          })
         );
         const dataNew = new ImageData(
           new Uint8ClampedArray(imageData.buffer.slice(0)),
@@ -182,9 +185,14 @@ function init(ctrl: ImageSegmenterControl) {
       result,
       new Uint8ClampedArray(imageData.buffer.slice(0))
     );
-    const state = window as { [key: string]: any };
-    state["img1"] = enhancedCategoryColors;
-    state["img_season"] = determineSeasonalPalette(enhancedCategoryColors);
+    window.dispatchEvent(
+      new CustomEvent("analysis:img1", { detail: enhancedCategoryColors })
+    );
+    window.dispatchEvent(
+      new CustomEvent("analysis:img_season", {
+        detail: determineSeasonalPalette(enhancedCategoryColors),
+      })
+    );
     const [uint8Array, category] = colorizeImgMaskedObjects(
       result,
       imageData,
