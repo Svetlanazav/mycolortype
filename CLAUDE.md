@@ -29,6 +29,26 @@
 - After every change, commit automatically using Conventional Commits format: `type(scope): description` (lower-case, max 72 chars). Types: `feat`, `fix`, `refactor`, `style`, `chore`, `docs`, `test`, `perf`
 - When asked to "запомни" — write the rule to CLAUDE.md, not to memory files
 
+## Framework and library upgrades
+
+When a major version of any dependency changes, always check the migration guide before writing code. Breaking changes are common in: API signatures, removed integrations, renamed config options, changed TypeScript generics. Never assume the old syntax still works — verify against the new docs first.
+
+## Global state and component communication
+
+Never use global objects (`window`, module-level variables) to pass data between scripts and UI components. Global state creates hidden dependencies, makes the data flow invisible, and causes timing bugs (polling, race conditions). Instead, use the platform's event system: dispatch a `CustomEvent` from the producer, listen for it in the consumer. Each piece of data should have one clear owner and one clear channel.
+
+## TypeScript strict mode
+
+This project uses `strictest` TypeScript. Every type must be explicit — no implicit `any`, no missing nullability, no unsafe casts. When a type error appears, fix the root cause (add the correct type, handle null, use a type guard). Do not suppress errors with `as any` or `// @ts-ignore`. If a type utility or library type is missing, add the correct `lib` target or install the `@types/*` package.
+
+## Unused code
+
+Every unused variable, parameter, or import is a sign of dead code or a logic gap. Remove it or, if it must stay (e.g. required function signature), prefix with `_` to signal intent. Never leave unused imports — they slow down builds and mislead readers.
+
+## Commit messages
+
+The full commit subject (everything after `type(scope):`) must be lower-case — including file names, proper nouns, and acronyms. Keep it under 72 characters. Write what changed and why, not just what file was touched.
+
 ## Markdown formatting (MD022/MD032)
 
 Always add blank lines around headings and lists:
