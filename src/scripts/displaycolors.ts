@@ -1,46 +1,51 @@
-interface RGB {
-  r: number;
-  g: number;
-  b: number;
-}
+import type { FaceColors } from "./facecolor";
+
 export function displayColorSwatches(
-  colors: {
-    leftIris: RGB;
-    rightIris: RGB;
-    lips: RGB;
-    skin: RGB;
-    eyeColor: RGB;
-  },
-  containerElement: HTMLElement // Add this parameter
+  colors: FaceColors,
+  containerElement: HTMLElement,
 ) {
-  // Create color swatches
+  // Clear previous results before rendering
+  containerElement.innerHTML = "";
+
   const swatchContainer = document.createElement("div");
   swatchContainer.style.display = "flex";
+  swatchContainer.style.flexWrap = "wrap";
   swatchContainer.style.gap = "10px";
   swatchContainer.style.margin = "10px";
 
-  const features = ["Left Iris", "Right Iris", "Lips", "Skin", "eyeColor"];
-  const colorValues = [
-    colors.leftIris,
-    colors.rightIris,
-    colors.lips,
-    colors.skin,
-    colors.eyeColor,
+  const features: Array<{ label: string; color: { r: number; g: number; b: number } }> = [
+    { label: "Left Iris", color: colors.leftIris },
+    { label: "Right Iris", color: colors.rightIris },
+    { label: "Eye Color", color: colors.eyeColor },
+    { label: "Lips", color: colors.lips },
+    { label: "Brows", color: colors.brows },
+    { label: "Skin", color: colors.skin },
   ];
-  console.log(colorValues);
-  features.forEach((feature, index) => {
-    const swatch = document.createElement("div");
-    const color = colorValues[index]!;
 
+  features.forEach(({ label, color }) => {
+    const wrapper = document.createElement("div");
+    wrapper.style.display = "flex";
+    wrapper.style.flexDirection = "column";
+    wrapper.style.alignItems = "center";
+    wrapper.style.gap = "4px";
+
+    const swatch = document.createElement("div");
     swatch.style.width = "50px";
     swatch.style.height = "50px";
     swatch.style.backgroundColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
-    swatch.style.border = "1px solid black";
-    swatch.title = feature;
+    swatch.style.border = "1px solid rgba(255,255,255,0.2)";
+    swatch.style.borderRadius = "6px";
+    swatch.title = label;
 
-    swatchContainer.appendChild(swatch);
+    const labelEl = document.createElement("span");
+    labelEl.style.fontSize = "10px";
+    labelEl.style.color = "#9ca3af";
+    labelEl.textContent = label;
+
+    wrapper.appendChild(swatch);
+    wrapper.appendChild(labelEl);
+    swatchContainer.appendChild(wrapper);
   });
 
-  // Add to the specified container
   containerElement.appendChild(swatchContainer);
 }

@@ -156,8 +156,9 @@ export function getIrisColor(
   const pupilRadius =
     pupilDetection.confidence > 0.5 ? pupilDetection.radius : irisRadius * 0.4; // Fallback to default ratio if detection confidence is low
 
-  // Find the maximum y-coordinate from boundary points
-  const maxY = Math.min(...boundaryCoords.map((point) => point.y));
+  // Find the topmost y-coordinate of the upper eyelid boundary.
+  // Iris pixels must be at or below this line (y >= upperLidTopY).
+  const upperLidTopY = Math.min(...boundaryCoords.map((point) => point.y));
 
   // Create color histogram
   const colorMap: Map<string, number> = new Map();
@@ -181,7 +182,7 @@ export function getIrisColor(
       if (
         distanceFromCenter <= irisRadius &&
         distanceFromCenter >= pupilRadius &&
-        y <= maxY &&
+        y >= upperLidTopY &&
         x >= 0 &&
         x < image.width &&
         y >= 0 &&

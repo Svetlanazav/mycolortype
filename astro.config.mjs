@@ -8,6 +8,9 @@ export default defineConfig({
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
+    optimizeDeps: {
+      exclude: ["@huggingface/transformers", "onnxruntime-web"],
+    },
   },
   site: "https://svetlanazav.github.io",
   base: "mycolortype",
