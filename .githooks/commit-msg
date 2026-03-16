@@ -1,0 +1,7 @@
+#!/bin/bash
+# commit-msg: validate commit message format (Conventional Commits)
+
+PROJECT="/Users/svetlana/Desktop/Product/VSCode/projects/mycolortype(last ver)/mycolortype"
+cd "$PROJECT"
+
+npx --no -- commitlint --edit "$1"
