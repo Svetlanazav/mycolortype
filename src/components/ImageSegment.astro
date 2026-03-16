@@ -109,6 +109,17 @@ import { SeasonResults } from "./SeasonResults";
 <script>
   import "../scripts/segmentation.ts";
 
+  // Restore uploaded photo from landing page if present
+  const uploaded = sessionStorage.getItem("uploadedPhoto");
+  if (uploaded) {
+    const img = document.querySelector(".segmentOnClick img") as HTMLImageElement | null;
+    if (img) {
+      img.src = uploaded;
+      img.removeAttribute("crossorigin");
+    }
+    sessionStorage.removeItem("uploadedPhoto");
+  }
+
   // Toggle webcam section visibility with button
   const btn = document.getElementById("webcamButton");
   const webcamSection = document.querySelector(".webcam");

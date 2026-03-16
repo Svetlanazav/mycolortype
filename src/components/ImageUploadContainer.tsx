@@ -117,7 +117,8 @@ const ImageUploadContainer: React.FC = () => {
 
   const startAnalysis = (): void => {
     if (selectedImage) {
-      setStep(3);
+      sessionStorage.setItem("uploadedPhoto", selectedImage);
+      window.location.href = "/mycolortype/analysis";
     }
   };
 
