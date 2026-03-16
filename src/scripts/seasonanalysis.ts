@@ -37,7 +37,7 @@ interface ColorValues {
 }
 
 export function determineSeasonalPalette(
-  colorValues: ColorValues
+  colorValues: ColorValues,
 ): SeasonalCharacteristics {
   // Calculate key characteristics
   const undertone = determineUndertone(colorValues.faceSkin);
@@ -54,14 +54,14 @@ export function determineSeasonalPalette(
     undertone,
     contrast,
     intensity,
-    value
+    value,
   );
 
   // Calculate confidence score
   const confidence = calculateSeasonalConfidence(
     colorValues,
     season,
-    subSeason
+    subSeason,
   );
 
   return {
@@ -95,30 +95,34 @@ export function determineSeasonalPalette(
 // }
 
 function determineUndertone(
-  skinAnalysis: ColorAnalysis
+  skinAnalysis: ColorAnalysis,
 ): "warm" | "cool" | "neutral" {
   const { lab, hsl } = skinAnalysis.colorSpace;
 
-  // Combine LAB and HSL information
-  const warmScoreLab = lab.a * 0.5 + lab.b;
-  const warmScoreHsl = Math.cos(((hsl.h - 30) * Math.PI) / 180); // Peak warmth at 30 degrees
+  // LAB: a > 0 = reddish (warm), b > 0 = yellowish (warm).
+  // Normalize to ~[-1, 1]: typical skin lab.a -5..+20, lab.b +5..+35.
+  const warmScoreLab = (lab.a * 0.4 + lab.b * 0.6) / 25;
 
-  const combinedScore = warmScoreLab * 0.7 + warmScoreHsl * 30 * 0.3;
+  // HSL: peak warmth at hue 30 (orange), peak cool at hue 210 (blue).
+  const warmScoreHsl = Math.cos(((hsl.h - 30) * Math.PI) / 180);
 
-  if (Math.abs(combinedScore) < 5) {
+  // Both inputs are now on the same [-1, 1] scale.
+  const combinedScore = warmScoreLab * 0.7 + warmScoreHsl * 0.3;
+
+  if (Math.abs(combinedScore) < 0.15) {
     return "neutral";
   }
   return combinedScore > 0 ? "warm" : "cool";
 }
 
 function calculateContrast(
-  colorValues: ColorValues
+  colorValues: ColorValues,
 ): "low" | "medium" | "high" {
   const { hair, faceSkin } = colorValues;
 
   // Calculate contrast using Lab values
   const contrastValue = Math.abs(
-    hair.colorSpace.lab.l - faceSkin.colorSpace.lab.l
+    hair.colorSpace.lab.l - faceSkin.colorSpace.lab.l,
   );
 
   if (contrastValue < 30) return "low";
@@ -127,32 +131,39 @@ function calculateContrast(
 }
 
 function calculateColorIntensity(
-  colorValues: ColorValues
+  colorValues: ColorValues,
 ): "soft" | "medium" | "bright" {
   const { faceSkin, hair } = colorValues;
 
-  // Use saturation from HSL to determine intensity
-  const skinSaturation = faceSkin.colorSpace.hsl.s;
-  const hairSaturation = hair.colorSpace.hsl.s;
+  // Lab chroma is perceptually uniform — better than HSL saturation.
+  // Chroma = sqrt(a² + b²). Typical skin: 5-40, hair: 2-35.
+  const skinChroma = Math.sqrt(
+    faceSkin.colorSpace.lab.a ** 2 + faceSkin.colorSpace.lab.b ** 2,
+  );
+  const hairChroma = Math.sqrt(
+    hair.colorSpace.lab.a ** 2 + hair.colorSpace.lab.b ** 2,
+  );
 
-  const averageSaturation = (skinSaturation + hairSaturation) / 2;
+  // Face skin is more representative of personal coloring than hair.
+  const weightedChroma = skinChroma * 0.65 + hairChroma * 0.35;
 
-  if (averageSaturation < 0.3) return "soft";
-  if (averageSaturation > 0.6) return "bright";
+  if (weightedChroma < 12) return "soft";
+  if (weightedChroma > 25) return "bright";
   return "medium";
 }
 
 function calculateValue(colorValues: ColorValues): "light" | "medium" | "deep" {
-  const { faceSkin, hair } = colorValues;
+  const { faceSkin, bodySkin, hair } = colorValues;
 
-  // Use lightness from Lab color space
-  const skinLightness = faceSkin.colorSpace.lab.l;
-  const hairLightness = hair.colorSpace.lab.l;
+  // Face skin matters most (50%), body skin adds context (30%), hair least (20%)
+  // because hair can be dyed, while skin is inherent.
+  const weightedLightness =
+    faceSkin.colorSpace.lab.l * 0.5 +
+    bodySkin.colorSpace.lab.l * 0.3 +
+    hair.colorSpace.lab.l * 0.2;
 
-  const averageLightness = (skinLightness + hairLightness) / 2;
-
-  if (averageLightness > 65) return "light";
-  if (averageLightness < 45) return "deep";
+  if (weightedLightness > 65) return "light";
+  if (weightedLightness < 45) return "deep";
   return "medium";
 }
 
@@ -160,7 +171,7 @@ function determineBaseSeason(
   undertone: "warm" | "cool" | "neutral",
   contrast: "low" | "medium" | "high",
   intensity: "soft" | "medium" | "bright",
-  value: "light" | "medium" | "deep"
+  value: "light" | "medium" | "deep",
 ): Season {
   if (undertone === "warm") {
     return value === "light" ? "Spring" : "Autumn";
@@ -179,37 +190,40 @@ function determineBaseSeason(
 function determineSubSeason(
   season: Season,
   undertone: "warm" | "cool" | "neutral",
-  _contrast: "low" | "medium" | "high",
+  contrast: "low" | "medium" | "high",
   intensity: "soft" | "medium" | "bright",
-  value: "light" | "medium" | "deep"
+  value: "light" | "medium" | "deep",
 ): SubSeason {
   switch (season) {
     case "Spring":
       if (value === "light") return "Light Spring";
-      if (undertone === "warm") return "Warm Spring";
-      return "Bright Spring";
+      if (contrast === "high" || intensity === "bright") return "Bright Spring";
+      return "Warm Spring";
 
     case "Summer":
-      if (value === "light") return "Light Summer";
+      if (value === "light" && intensity === "soft") return "Light Summer";
       if (intensity === "soft") return "Soft Summer";
       return "Cool Summer";
 
     case "Autumn":
-      if (intensity === "soft") return "Soft Autumn";
-      if (undertone === "warm") return "Warm Autumn";
-      return "Deep Autumn";
+      if (intensity === "soft" || contrast === "low") return "Soft Autumn";
+      if (value === "deep") return "Deep Autumn";
+      return "Warm Autumn";
 
     case "Winter":
       if (value === "deep") return "Deep Winter";
-      if (undertone === "cool") return "Cool Winter";
-      return "Bright Winter";
+      if (contrast === "high" || intensity === "bright") return "Bright Winter";
+      return "Cool Winter";
+
+    default:
+      return undertone === "warm" ? "Warm Spring" : "Cool Winter";
   }
 }
 
 function calculateSeasonalConfidence(
   colorValues: ColorValues,
   season: Season,
-  _subSeason: SubSeason
+  _subSeason: SubSeason,
 ): number {
   const { hair, faceSkin } = colorValues;
 
@@ -231,85 +245,49 @@ function calculateSeasonalConfidence(
 
 function calculateCharacteristicMatch(
   colorValues: ColorValues,
-  season: Season
+  season: Season,
 ): number {
-  // Calculate how well the characteristics match the typical values for the season
-  // Returns a value between 0 and 1
-
   const undertone = determineUndertone(colorValues.faceSkin);
-  const expectedUndertone =
-    season === "Spring" || season === "Autumn" ? "warm" : "cool";
+  const value = calculateValue(colorValues);
+  const intensity = calculateColorIntensity(colorValues);
 
-  const undertoneMatch =
-    undertone === expectedUndertone ? 1 : undertone === "neutral" ? 0.7 : 0.5;
+  // Expected characteristics per season (multiple valid values per dimension)
+  const expectations: Record<
+    Season,
+    {
+      undertone: string[];
+      value: string[];
+      intensity: string[];
+    }
+  > = {
+    Spring: {
+      undertone: ["warm"],
+      value: ["light", "medium"],
+      intensity: ["medium", "bright"],
+    },
+    Summer: {
+      undertone: ["cool", "neutral"],
+      value: ["light", "medium"],
+      intensity: ["soft", "medium"],
+    },
+    Autumn: {
+      undertone: ["warm", "neutral"],
+      value: ["medium", "deep"],
+      intensity: ["soft", "medium"],
+    },
+    Winter: {
+      undertone: ["cool"],
+      value: ["medium", "deep"],
+      intensity: ["medium", "bright"],
+    },
+  };
 
-  // Add more characteristic matching calculations...
+  const exp = expectations[season];
 
-  return undertoneMatch;
+  // Undertone is the strongest season signal (0.5), value next (0.3), intensity (0.2)
+  const undertoneScore = exp.undertone.includes(undertone) ? 1 : 0.4;
+  const valueScore = exp.value.includes(value) ? 1 : 0.6;
+  const intensityScore = exp.intensity.includes(intensity) ? 1 : 0.6;
+
+  return undertoneScore * 0.5 + valueScore * 0.3 + intensityScore * 0.2;
 }
-
-// Python equivalent (key functions)
-// """
-// import numpy as np
-// from dataclasses import dataclass
-// from typing import Literal, TypedDict
-// from enum import Enum
-
-// class Season(Enum):
-//     SPRING = "Spring"
-//     SUMMER = "Summer"
-//     AUTUMN = "Autumn"
-//     WINTER = "Winter"
-
-// @dataclass
-// class ColorAnalysis:
-//     color: dict  # RGB values
-//     confidence: float
-//     shadow_percentage: float
-//     color_space: dict  # Contains RGB, HSL, Lab
-
-// def determine_undertone(skin_analysis: ColorAnalysis) -> str:
-//     lab = skin_analysis.color_space['lab']
-//     warm_score = lab['a'] * 0.5 + lab['b']
-
-//     if abs(warm_score) < 5:
-//         return 'neutral'
-//     return 'warm' if warm_score > 0 else 'cool'
-
-// def calculate_contrast(color_values: dict) -> str:
-//     hair = color_values['hair']
-//     face_skin = color_values['faceSkin']
-
-//     contrast_value = abs(
-//         hair.color_space['lab']['l'] -
-//         face_skin.color_space['lab']['l']
-//     )
-
-//     if contrast_value < 30:
-//         return 'low'
-//     if contrast_value > 50:
-//         return 'high'
-//     return 'medium'
-
-// def determine_seasonal_palette(color_values: dict) -> dict:
-//     undertone = determine_undertone(color_values['faceSkin'])
-//     contrast = calculate_contrast(color_values)
-//     intensity = calculate_color_intensity(color_values)
-//     value = calculate_value(color_values)
-
-//     season = determine_base_season(undertone, contrast, intensity, value)
-//     sub_season = determine_sub_season(season, undertone, contrast, intensity, value)
-//     confidence = calculate_seasonal_confidence(color_values, season, sub_season)
-
-//     return {
-//         'season': season,
-//         'subSeason': sub_season,
-//         'characteristics': {
-//             'contrast': contrast,
-//             'undertone': undertone,
-//             'intensity': intensity,
-//             'value': value
-//         },
-//         'confidence': confidence
-//     }
-// """
