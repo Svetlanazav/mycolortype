@@ -20,6 +20,8 @@
 
 ## For Claude
 
+- Before big tasks or fixes — read `PROGRESS.md` to understand what's already done
+- After finishing a significant task — update `PROGRESS.md` (tick checkbox or add new item)
 - Use `uv run` for all Python commands
 - Language: Russian communication, English code/docs
 - Don't over-engineer, keep solutions simple
