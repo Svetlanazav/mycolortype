@@ -3,6 +3,8 @@ import {
   FilesetResolver,
   DrawingUtils,
   type FaceLandmarkerResult,
+  type Classifications,
+  type Category,
 } from "@mediapipe/tasks-vision";
 const demosSection = document.getElementById("demos");
 const imageBlendShapes = document.getElementById("image-blend-shapes");
@@ -265,7 +267,7 @@ async function predictWebcam() {
   }
 }
 
-function drawBlendShapes(el: HTMLElement, blendShapes: any[]) {
+function drawBlendShapes(el: HTMLElement, blendShapes: Classifications[]) {
   if (!blendShapes.length) {
     return;
   }
@@ -273,7 +275,7 @@ function drawBlendShapes(el: HTMLElement, blendShapes: any[]) {
   console.log(blendShapes[0]);
 
   let htmlMaker = "";
-  blendShapes[0].categories.map((shape: any) => {
+  blendShapes[0]!.categories.map((shape: Category) => {
     htmlMaker += `
       <li class="blend-shapes-item">
         <span class="blend-shapes-label">${

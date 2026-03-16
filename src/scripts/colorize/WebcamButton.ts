@@ -1,7 +1,7 @@
 export function WebcamButton({
   onClick,
 }: {
-  onClick: (this: HTMLButtonElement, ev: MouseEvent) => any;
+  onClick: (this: HTMLButtonElement, ev: MouseEvent) => void;
 }) {
   let enableWebcamButton: HTMLButtonElement;
   // If webcam supported, add event listener to button.
