@@ -1,6 +1,7 @@
 ---
 import { AnalysisResults } from "./AnalysisResults";
 import { SeasonResults } from "./SeasonResults";
+import { SeasonPaletteResults } from "./SeasonPaletteResults";
 ---
 
 <div class="min-h-screen bg-gray-950 text-white">
@@ -91,6 +92,9 @@ import { SeasonResults } from "./SeasonResults";
         id="results-container"
         class="p-6 flex flex-wrap gap-3"
       ></div>
+
+      <!-- Recommended palette based on detected season -->
+      <SeasonPaletteResults client:only="react" />
     </div>
   </div>
 
