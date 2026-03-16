@@ -3,135 +3,116 @@ import { AnalysisResults } from "./AnalysisResults";
 import { SeasonResults } from "./SeasonResults";
 ---
 
-<h1>Segmenting images using the MediaPipe Image Segmentation Task</h1>
+<div class="min-h-screen bg-gray-950 text-white">
 
-<!-- Image Container -->
-<div
-  class="flex-1 bg-grey-200 flex justify-center group hover:bg-blue-100 transition duration-300"
->
-  <section id="demos" class="invisible"></section>
-  <div class="segmentOnClick">
-    <canvas class="removed"></canvas>
-    <img
-      src="https://static.independent.co.uk/s3fs-public/thumbnails/image/2013/01/09/23/v3-pg-12-blue-eyes-rex.jpg"
-      crossorigin="anonymous"
-      title="Click to get segmentation!"
-    />
-    <p class="classification removed"></p>
-  </div>
-</div>
-
-<div
-  class="flex-1 bg-gray-800 text-white flex items-center justify-center group hover:bg-gray-900 transition duration-300"
->
-  <div class="p-6 text-center">
-    <AnalysisResults client:only="react" type="colors" />
-    <AnalysisResults client:only="react" type="img1" />
-    <SeasonResults client:only="react" type="video_season" />
-    <SeasonResults client:only="react" type="img_season" />
-  </div>
-</div>
-
-<div
-  class="container flex-1 bg-gray-800 text-white flex items-center justify-center group hover:bg-gray-900 transition duration-300"
-  id="results-container"
->
-</div>
-<input type="color" />
-
-<div class="webcam">
-  <button id="webcamButton" class="form-input">ENABLE WEBCAM</button>
-  <video id="webcam" autoplay style="display: none;"></video>
-  <canvas id="canvas" width="1280px" height="720px"></canvas>
-</div>
-<div class="blend-shapes">
-  <ul class="blend-shapes-list" id="image-blend-shapes"></ul>
-</div>
-
-<!-- <section id="demos" class="invisible">
-  <AnalysisResults client:only="react" type="colors" />
-  <AnalysisResults client:only="react" type="img1" />
-  <SeasonResults client:only="react" type="video_season" />
-  <SeasonResults client:only="react" type="img_season" />
-  <h2>Demo: Segmenting Images</h2>
-  <p><b>Click on an image below</b> to see its Segmentation.</p>
-  <div class="segmentOnClick">
-    <canvas class="removed"></canvas>
-    <p class="classification removed"></p>
-  </div>
-  <div class="segmentOnClick">
-    <canvas class="removed"></canvas>
-    <img src="" crossorigin="anonymous" title="Click to get segmentation!" />
-    <p class="classification removed"></p>
+  <!-- Header -->
+  <div class="border-b border-gray-800 px-6 py-4">
+    <h1 class="text-lg font-semibold tracking-tight text-white">Color Analysis</h1>
+    <p class="text-sm text-gray-400 mt-0.5">Upload a photo to discover your seasonal color type</p>
   </div>
 
-  <div class="webcam">
-    <button id="webcamButton" class="form-input">ENABLE WEBCAM</button>
-    <video id="webcam" autoplay style="display: none;"></video>
-    <canvas id="canvas" width="1280px" height="720px"></canvas>
+  <!-- Main layout: photo left, results right -->
+  <div class="flex flex-col lg:flex-row gap-0 lg:h-[calc(100vh-65px)]">
+
+    <!-- Left: upload + image -->
+    <div class="lg:w-1/2 flex flex-col border-r border-gray-800">
+
+      <div class="p-4 text-xs text-gray-500 uppercase tracking-widest font-medium border-b border-gray-800">
+        Photo
+      </div>
+
+      <!-- Image area -->
+      <div class="flex-1 flex items-center justify-center p-6 relative">
+        <div class="segmentOnClick w-full max-w-md relative cursor-pointer group">
+          <canvas class="removed absolute inset-0 w-full h-full object-contain rounded-xl"></canvas>
+          <img
+            src="https://static.independent.co.uk/s3fs-public/thumbnails/image/2013/01/09/23/v3-pg-12-blue-eyes-rex.jpg"
+            crossorigin="anonymous"
+            title="Click to analyse"
+            class="w-full rounded-xl shadow-lg group-hover:opacity-90 transition-opacity"
+          />
+          <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <span class="bg-black/60 text-white text-sm px-4 py-2 rounded-full backdrop-blur-sm">
+              Click to analyse
+            </span>
+          </div>
+          <p class="classification removed mt-2 text-xs text-center text-gray-400"></p>
+        </div>
+      </div>
+
+      <!-- Webcam toggle -->
+      <div class="border-t border-gray-800 p-4 flex items-center gap-3">
+        <button id="webcamButton" class="text-sm px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-white">
+          Enable webcam
+        </button>
+        <span class="text-xs text-gray-500">or use your camera for live analysis</span>
+      </div>
+
+      <!-- Hidden webcam canvas -->
+      <div class="webcam hidden p-4 border-t border-gray-800">
+        <video id="webcam" autoplay class="w-full rounded-lg"></video>
+        <canvas id="canvas" width="1280" height="720" class="w-full rounded-lg mt-2"></canvas>
+      </div>
+    </div>
+
+    <!-- Right: results -->
+    <div class="lg:w-1/2 flex flex-col overflow-y-auto">
+
+      <!-- Season result -->
+      <div class="p-4 text-xs text-gray-500 uppercase tracking-widest font-medium border-b border-gray-800">
+        Season
+      </div>
+      <div class="p-6 border-b border-gray-800 flex justify-center">
+        <SeasonResults client:only="react" type="img_season" />
+      </div>
+      <div class="p-6 border-b border-gray-800 flex justify-center">
+        <SeasonResults client:only="react" type="video_season" />
+      </div>
+
+      <!-- Color breakdown -->
+      <div class="p-4 text-xs text-gray-500 uppercase tracking-widest font-medium border-b border-gray-800">
+        Color breakdown
+      </div>
+      <div class="p-6 border-b border-gray-800 flex justify-center">
+        <AnalysisResults client:only="react" type="img1" />
+      </div>
+      <div class="p-6 border-b border-gray-800 flex justify-center">
+        <AnalysisResults client:only="react" type="colors" />
+      </div>
+
+      <!-- Face color swatches from FaceColorAnalyzer -->
+      <div class="p-4 text-xs text-gray-500 uppercase tracking-widest font-medium border-b border-gray-800">
+        Face features
+      </div>
+      <div
+        id="results-container"
+        class="p-6 flex flex-wrap gap-3"
+      ></div>
+    </div>
   </div>
-  <div class="blend-shapes">
+
+  <!-- Blend shapes (hidden, debug) -->
+  <div class="blend-shapes hidden">
     <ul class="blend-shapes-list" id="image-blend-shapes"></ul>
   </div>
-</section> -->
+</div>
 
 <style>
-  video {
-    clear: both;
-    display: block;
-  }
-  canvas {
-    clear: both;
-    display: block;
-  }
-
-  section {
-    opacity: 1;
-    transition: opacity 500ms ease-in-out;
-  }
-
   .removed {
     display: none;
   }
-
-  .invisible {
-    opacity: 0.2;
-  }
-
-  .videoView,
-  .segmentOnClick {
-    position: relative;
-    float: left;
-    width: 48%;
-    margin: 2% 1%;
-    cursor: pointer;
-  }
-
-  .segmentOnClick p {
-    padding: 5px;
-    background-color: #007f8b;
-    color: #fff;
-    z-index: 2;
-    font-size: 12px;
-    margin: 0;
-  }
-
-  .segmentOnClick {
-    z-index: 0;
-  }
-
   .segmentOnClick canvas {
-    position: absolute;
-    top: 0px;
-    bottom: 0px;
-    width: 100%;
-  }
-
-  .segmentOnClick img {
-    width: 100%;
+    z-index: 1;
   }
 </style>
 
 <script>
   import "../scripts/segmentation.ts";
+
+  // Toggle webcam section visibility with button
+  const btn = document.getElementById("webcamButton");
+  const webcamSection = document.querySelector(".webcam");
+  btn?.addEventListener("click", () => {
+    webcamSection?.classList.toggle("hidden");
+  });
 </script>
