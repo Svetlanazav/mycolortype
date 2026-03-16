@@ -5,11 +5,11 @@ export function SeasonResults({ type }: { type: string }) {
   const [colors, setColors] = useState<SeasonalCharacteristics>();
   useEffect(() => {
     const id = setInterval(() => {
-      const analysisResults = window[type];
+      const analysisResults = (window as unknown as Record<string, unknown>)[type];
       if (!analysisResults) {
         return;
       }
-      setColors(analysisResults);
+      setColors(analysisResults as SeasonalCharacteristics);
     }, 1000);
     return () => clearInterval(id);
   }, []);

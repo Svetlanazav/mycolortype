@@ -25,10 +25,10 @@ import { SeasonResults } from "./SeasonResults";
   class="flex-1 bg-gray-800 text-white flex items-center justify-center group hover:bg-gray-900 transition duration-300"
 >
   <div class="p-6 text-center">
-    <AnalysisResults client:only type="colors" />
-    <AnalysisResults client:only type="img1" />
-    <SeasonResults client:only type="video_season" />
-    <SeasonResults client:only type="img_season" />
+    <AnalysisResults client:only="react" type="colors" />
+    <AnalysisResults client:only="react" type="img1" />
+    <SeasonResults client:only="react" type="video_season" />
+    <SeasonResults client:only="react" type="img_season" />
   </div>
 </div>
 
@@ -49,10 +49,10 @@ import { SeasonResults } from "./SeasonResults";
 </div>
 
 <!-- <section id="demos" class="invisible">
-  <AnalysisResults client:only type="colors" />
-  <AnalysisResults client:only type="img1" />
-  <SeasonResults client:only type="video_season" />
-  <SeasonResults client:only type="img_season" />
+  <AnalysisResults client:only="react" type="colors" />
+  <AnalysisResults client:only="react" type="img1" />
+  <SeasonResults client:only="react" type="video_season" />
+  <SeasonResults client:only="react" type="img_season" />
   <h2>Demo: Segmenting Images</h2>
   <p><b>Click on an image below</b> to see its Segmentation.</p>
   <div class="segmentOnClick">

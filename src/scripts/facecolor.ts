@@ -1,7 +1,5 @@
 import {
   DrawingUtils,
-  FaceLandmarker,
-  type FaceLandmarkerResult,
   type NormalizedLandmark,
 } from "@mediapipe/tasks-vision";
 import { getIrisColor } from "./asdfasd";
@@ -170,7 +168,7 @@ export class FaceColorAnalyzer {
     radius: number,
     validationFn: (color: RGB) => boolean
   ): RGB[] {
-    let colors: RGB[] = [];
+    const colors: RGB[] = [];
 
     // Sample in a circular pattern
     for (let dx = -radius; dx <= radius; dx++) {
@@ -209,7 +207,7 @@ export class FaceColorAnalyzer {
         : [];
     }
 
-    let clusters: ColorCluster[] = new Array(this.NUM_CLUSTERS)
+    const clusters: ColorCluster[] = new Array(this.NUM_CLUSTERS)
       .fill(null)
       .map(() => {
         const randomIndex = Math.floor(Math.random() * colors.length);
@@ -279,7 +277,7 @@ export class FaceColorAnalyzer {
 
     const clusters = this.kMeansClustering(colors);
     clusters.sort((a, b) => b.colors.length - a.colors.length);
-    return clusters[0]!?.center || colors[0];
+    return clusters[0]?.center ?? colors[0]!;
   }
 
   public analyzeFaceColors(landmarks: NormalizedLandmark[]): {
@@ -379,7 +377,7 @@ export class FaceColorAnalyzer {
       skinColors.push(...samples);
     });
 
-    let imageData = this.ctx.getImageData(
+    const imageData = this.ctx.getImageData(
       0,
       0,
       this.canvas.width,

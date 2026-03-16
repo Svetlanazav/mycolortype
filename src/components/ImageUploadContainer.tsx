@@ -9,7 +9,7 @@ interface ModalProps {
   onClose: () => void;
   onFileUpload: (event: ChangeEvent<HTMLInputElement>) => void;
   onCameraStart: () => void;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 const Modal: React.FC<ModalProps> = ({

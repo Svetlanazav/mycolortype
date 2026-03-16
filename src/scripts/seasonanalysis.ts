@@ -179,7 +179,7 @@ function determineBaseSeason(
 function determineSubSeason(
   season: Season,
   undertone: "warm" | "cool" | "neutral",
-  contrast: "low" | "medium" | "high",
+  _contrast: "low" | "medium" | "high",
   intensity: "soft" | "medium" | "bright",
   value: "light" | "medium" | "deep"
 ): SubSeason {
@@ -209,7 +209,7 @@ function determineSubSeason(
 function calculateSeasonalConfidence(
   colorValues: ColorValues,
   season: Season,
-  subSeason: SubSeason
+  _subSeason: SubSeason
 ): number {
   const { hair, faceSkin } = colorValues;
 

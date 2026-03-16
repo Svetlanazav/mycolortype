@@ -186,7 +186,7 @@ function analyzeCategoryColorEnhanced(
   }
 
   const avgColor = calculateAverageColor(pixels);
-  const { shadowPixels, nonShadowPixels, shadowPercentage } = detectShadows(
+  const { nonShadowPixels, shadowPercentage } = detectShadows(
     pixels,
     avgColor
   );

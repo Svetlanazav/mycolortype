@@ -14,11 +14,6 @@ interface RGB {
   b: number;
 }
 
-interface ColorStats {
-  avgColor: RGB;
-  dominantColor: RGB;
-  shadowAdjustedColor: RGB;
-}
 
 export function analyzeImageCategories(
   result: ImageSegmenterResult,

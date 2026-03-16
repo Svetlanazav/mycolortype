@@ -5,12 +5,12 @@ export function AnalysisResults({ type }: { type: string }) {
   const [colors, setColors] = useState([] as [string, ColorAnalysis][]);
   useEffect(() => {
     const id = setInterval(() => {
-      const analysisResults = window[type];
+      const analysisResults = (window as unknown as Record<string, unknown>)[type];
       if (!analysisResults) {
         return;
       }
       setColors(
-        Object.entries(analysisResults).map(([key, value]) => [key, value])
+        Object.entries(analysisResults as Record<string, ColorAnalysis>).map(([key, value]) => [key, value] as [string, ColorAnalysis])
       );
     }, 1000);
     return () => clearInterval(id);
@@ -23,7 +23,7 @@ export function AnalysisResults({ type }: { type: string }) {
         {colors.map(
           ([
             key,
-            { color: value, shadowPercentage, colorSpace, confidence },
+            { color: value, shadowPercentage, confidence },
           ]) => (
             <div
               key={key}
@@ -57,7 +57,7 @@ export function AnalysisResults({ type }: { type: string }) {
 //   );
 //   useEffect(() => {
 //     const id = setInterval(() => {
-//       const analysisResults = window[type];
+//       const analysisResults = (window as unknown as Record<string, unknown>)[type];
 //       if (!analysisResults) {
 //         return;
 //       }

@@ -1,3 +1,15 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+
+@theme {
+  --color-primary-plum: #4A3346;
+  --color-primary-mauve: #9D8189;
+  --color-primary-sand: #F5E6E8;
+  --color-accent-rose: #D4B2BC;
+  --color-accent-gold: #D4A373;
+  --color-accent-sage: #87A878;
+}
+
 :root {
   --accent: 136, 58, 234;
   --accent-light: 224, 204, 250;

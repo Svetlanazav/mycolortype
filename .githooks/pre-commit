@@ -1,0 +1,16 @@
+#!/bin/bash
+# Pre-commit: lint + full type check + build
+# Runs automatically before every git commit
+
+set -e
+
+PROJECT="/Users/svetlana/Desktop/Product/VSCode/projects/mycolortype(last ver)/mycolortype"
+cd "$PROJECT"
+
+echo "🔍 Lint..."
+npm run lint --silent
+
+echo "🏗️  Build (astro check + astro build)..."
+npm run build
+
+echo "✅ All checks passed"

@@ -26,7 +26,6 @@ function getBrightnessGradient(
     return 0;
   }
 
-  const idx = (y * image.width + x) * 4;
   let prev: number, next: number;
 
   if (direction === "horizontal") {
@@ -56,7 +55,7 @@ function detectPupilBoundary(
   const angleStep = (2 * Math.PI) / samples;
   const radialSteps = 20; // Number of steps to search in radial direction
 
-  let edgePoints: Point[] = [];
+  const edgePoints: Point[] = [];
   let totalConfidence = 0;
 
   // Search along radial lines from center
@@ -230,29 +229,9 @@ export function getIrisColor(
     }),
     { r: 0, g: 0, b: 0 }
   );
-  debugger;
-
   return {
     r: Math.round(averageColor.r / dominantPixels.length),
     g: Math.round(averageColor.g / dominantPixels.length),
     b: Math.round(averageColor.b / dominantPixels.length),
   };
-}
-
-// Example usage:
-function detectEyeColor(
-  image: ImageData,
-  landmarks: NormalizedLandmark[]
-): RGB {
-  const irisPoints = [474, 475, 477, 476]; // Right iris landmarks
-  const boundaryPoints = [385, 386, 380, 374]; // Upper boundary points
-  const pupilCenter = 473; // Pupil center landmark
-
-  return getIrisColor(
-    image,
-    landmarks,
-    irisPoints,
-    boundaryPoints,
-    pupilCenter
-  );
 }

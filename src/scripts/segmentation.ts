@@ -43,7 +43,7 @@ function main() {
   WebcamButton({
     onClick: async function enableCam(
       this: HTMLButtonElement,
-      event: MouseEvent
+      _event: MouseEvent
     ) {
       if (!ctrl.loaded) {
         return;
@@ -80,13 +80,13 @@ function main() {
       videoFrame: video,
       timestamp: performance.now(),
       callback: (result: ImageSegmenterResult) => {
-        let imageData = canvasCtx.getImageData(
+        const imageData = canvasCtx.getImageData(
           0,
           0,
           video.videoWidth,
           video.videoHeight
         ).data;
-        const uint8Array = colorizeVideoMaskedObjects(
+        colorizeVideoMaskedObjects(
           result,
           new Uint8ClampedArray(imageData.buffer.slice(0))
         );
@@ -175,7 +175,7 @@ function init(ctrl: ImageSegmenterControl) {
       width: number;
       height: number;
     };
-    let imageData = cxt.getImageData(0, 0, width, height).data;
+    const imageData = cxt.getImageData(0, 0, width, height).data;
     canvasClick.width = width;
     canvasClick.height = height;
     const enhancedCategoryColors = analyzeImageCategories(
@@ -190,7 +190,7 @@ function init(ctrl: ImageSegmenterControl) {
       imageData,
       ctrl.imageSegmenter.getLabels()
     );
-    cxt.putImageData(new ImageData(uint8Array, width, height), 0, 0);
+    cxt.putImageData(new ImageData(new Uint8ClampedArray(uint8Array.buffer as ArrayBuffer), width, height), 0, 0);
     const p = (
       (event.target! as HTMLElement).parentNode! as HTMLElement
     ).getElementsByClassName("classification")[0] as HTMLElement;
