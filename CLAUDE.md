@@ -87,6 +87,23 @@ npx astro check && npm run build
 
 to verify 0 errors and build succeeds.
 
+## Post-edit validation (TypeScript/Astro project)
+
+This is a TypeScript project (package.json + tsconfig.json detected). After **every Edit or Write operation**, automatically run the full validation cycle:
+
+```bash
+npm run lint:fix   # auto-fix style/lint issues
+npm run lint       # verify 0 errors remain
+npm run build      # astro check (type-check .astro + .ts) + build
+```
+
+Rules:
+
+- Never report "done" or "success" until all three commands pass with 0 errors.
+- If any command fails, fix the issue immediately and re-run the full cycle before proceeding.
+- `npm run build` includes `astro check` which type-checks both `.astro` and `.ts` files — this is the TypeScript validator for this project (not `tsc --noEmit` directly).
+- Warnings are OK; errors are not.
+
 ## Workflow for implementing a task
 
 - use `gh` to access GitHub
