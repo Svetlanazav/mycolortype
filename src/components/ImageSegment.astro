@@ -40,12 +40,15 @@ import { SeasonResults } from "./SeasonResults";
         </div>
       </div>
 
-      <!-- Webcam toggle -->
-      <div class="border-t border-gray-800 p-4 flex items-center gap-3">
+      <!-- Bottom toolbar: upload + webcam -->
+      <div class="border-t border-gray-800 p-4 flex items-center gap-3 flex-wrap">
+        <label class="text-sm px-4 py-2 rounded-lg bg-primary-plum hover:bg-primary-mauve transition-colors text-white cursor-pointer">
+          Upload photo
+          <input id="photoUpload" type="file" accept="image/*" class="hidden" />
+        </label>
         <button id="webcamButton" class="text-sm px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-white">
           Enable webcam
         </button>
-        <span class="text-xs text-gray-500">or use your camera for live analysis</span>
       </div>
 
       <!-- Hidden webcam canvas -->
@@ -119,6 +122,23 @@ import { SeasonResults } from "./SeasonResults";
     }
     sessionStorage.removeItem("uploadedPhoto");
   }
+
+  // File upload — swap the analysable image with user's photo
+  const photoUpload = document.getElementById("photoUpload") as HTMLInputElement | null;
+  photoUpload?.addEventListener("change", () => {
+    const file = photoUpload.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = document.querySelector(".segmentOnClick img") as HTMLImageElement | null;
+    if (img) {
+      img.src = url;
+      img.removeAttribute("crossorigin");
+      img.style.opacity = "1";
+      // reset canvas so old result disappears
+      const canvas = img.closest(".segmentOnClick")?.querySelector("canvas");
+      if (canvas) canvas.classList.add("removed");
+    }
+  });
 
   // Toggle webcam section visibility with button
   const btn = document.getElementById("webcamButton");
