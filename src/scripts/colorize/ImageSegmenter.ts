@@ -7,68 +7,73 @@ import {
 
 type RunningMode = "IMAGE" | "VIDEO";
 
+export type SegmentOptions =
+  | {
+      mode: "VIDEO";
+      videoFrame: TexImageSource;
+      timestamp: number;
+      callback: ImageSegmenterCallback;
+    }
+  | {
+      mode: "IMAGE";
+      image: TexImageSource;
+      callback: ImageSegmenterCallback;
+    };
+
 export class ImageSegmenterControl {
-  public filesetResolver!: FilesetResolver;
-  public imageSegmenter!: ImageSegmenter;
-  public faceLandmarker!: FaceLandmarker;
+  public filesetResolver: FilesetResolver | null = null;
+  public imageSegmenter: ImageSegmenter | null = null;
+  public faceLandmarker: FaceLandmarker | null = null;
   public loaded = false;
+
   constructor(private _runningMode: RunningMode) {}
+
   init(
     filesetResolver: FilesetResolver,
     imageSegmenter: ImageSegmenter,
-    faceLandmarker: FaceLandmarker
+    faceLandmarker: FaceLandmarker,
   ) {
     this.filesetResolver = filesetResolver;
     this.imageSegmenter = imageSegmenter;
     this.faceLandmarker = faceLandmarker;
     this.loaded = true;
   }
+
   get runningMode() {
     return this._runningMode;
   }
-  async setRunningMode(
-    options:
-      | {
-          mode: "VIDEO";
-          videoFrame: TexImageSource;
-          timestamp: number;
-          callback: ImageSegmenterCallback;
-        }
-      | {
-          mode: "IMAGE";
-          image: TexImageSource;
-          callback: ImageSegmenterCallback;
-        }
-  ) {
-    // Only update setOptions when mode actually changes — never skip the segment call itself.
-    if (this.runningMode !== options.mode) {
+
+  async segment(options: SegmentOptions) {
+    if (!this.loaded || !this.imageSegmenter) {
+      throw new Error("ImageSegmenter not loaded — call loadImageSegmenter() first");
+    }
+
+    if (this._runningMode !== options.mode) {
       this._runningMode = options.mode;
       await Promise.all([
         this.imageSegmenter.setOptions({ runningMode: options.mode }),
-        this.faceLandmarker.setOptions({ runningMode: options.mode }),
+        this.faceLandmarker?.setOptions({ runningMode: options.mode }),
       ]);
     }
 
     switch (options.mode) {
-      case "IMAGE": {
+      case "IMAGE":
         this.imageSegmenter.segment(options.image, options.callback);
         return;
-      }
-      case "VIDEO": {
+      case "VIDEO":
         this.imageSegmenter.segmentForVideo(
           options.videoFrame,
           options.timestamp,
-          options.callback
+          options.callback,
         );
-        break;
-      }
+        return;
     }
   }
 }
 
 export const loadImageSegmenter = async (ctrl: ImageSegmenterControl) => {
   const filesetresolver = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm",
   );
   const [imageSegmenter, faceLandmarker] = await Promise.all([
     ImageSegmenter.createFromOptions(filesetresolver, {

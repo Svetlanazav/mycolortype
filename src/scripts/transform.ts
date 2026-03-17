@@ -26,21 +26,18 @@ const legendColors = [
 
 export function colorizeMaskedObjects(
   result: ImageSegmenterResult,
-  imageData: Uint8ClampedArray
+  imageData: Uint8ClampedArray,
 ): Uint8ClampedArray {
-  const mask: Float32Array = result.categoryMask!.getAsFloat32Array();
-  let j = 0;
-  for (let i = 0; i < mask.length; ++i) {
-    const maskVal = Math.round(mask[i]! * 255.0);
-    const legendColor = legendColors[maskVal % legendColors.length]!;
+  const mask: Uint8Array = result.categoryMask!.getAsUint8Array();
+  for (let i = 0; i < mask.length; i++) {
+    const legendColor = legendColors[mask[i]! % legendColors.length]!;
+    const j = i * 4;
     imageData[j] = (legendColor[0] + imageData[j]!) / 2;
     imageData[j + 1] = (legendColor[1] + imageData[j + 1]!) / 2;
     imageData[j + 2] = (legendColor[2] + imageData[j + 2]!) / 2;
     imageData[j + 3] = (legendColor[3] + imageData[j + 3]!) / 2;
-    j += 4;
   }
-  const uint8Array = new Uint8ClampedArray(imageData.buffer);
-  return uint8Array;
+  return imageData;
 }
 
 export function colorizeImgMaskedObjects(
@@ -48,20 +45,19 @@ export function colorizeImgMaskedObjects(
   imageData: Uint8ClampedArray,
   labels: string[]
 ): [Uint8ClampedArray, string] {
-  let category: string = "";
+  let category = "";
   const mask: Uint8Array = result.categoryMask!.getAsUint8Array();
-  console.log(result, labels);
-  for (const x in mask) {
-    const i = parseInt(x);
-    if (mask[i]! > 0) {
-      category = labels[mask[i]!]!;
+  for (let i = 0; i < mask.length; i++) {
+    const cat = mask[i]!;
+    if (cat > 0) {
+      category = labels[cat] ?? category;
     }
-    const legendColor = legendColors[mask[i]! % legendColors.length]!;
-    imageData[i * 4] = (legendColor[0] + imageData[i * 4]!) / 2;
-    imageData[i * 4 + 1] = (legendColor[1] + imageData[i * 4 + 1]!) / 2;
-    imageData[i * 4 + 2] = (legendColor[2] + imageData[i * 4 + 2]!) / 2;
-    imageData[i * 4 + 3] = (legendColor[3] + imageData[i * 4 + 3]!) / 2;
+    const legendColor = legendColors[cat % legendColors.length]!;
+    const j = i * 4;
+    imageData[j] = (legendColor[0] + imageData[j]!) / 2;
+    imageData[j + 1] = (legendColor[1] + imageData[j + 1]!) / 2;
+    imageData[j + 2] = (legendColor[2] + imageData[j + 2]!) / 2;
+    imageData[j + 3] = (legendColor[3] + imageData[j + 3]!) / 2;
   }
-  const uint8Array = new Uint8ClampedArray(imageData.buffer);
-  return [uint8Array, category];
+  return [imageData, category];
 }

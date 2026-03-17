@@ -6,7 +6,6 @@ import {
 import { analyzeImageCategoriesEnhanced as analyzeImageCategories } from "./avrcolorenhanced";
 import { determineSeasonalPalette } from "./seasonanalysis";
 import { FaceColorAnalyzer } from "./facecolor";
-import { displayColorSwatches } from "./displaycolors";
 import { loadFaceParser, analyzeFaceWithParsing } from "./faceParsing";
 import {
   loadImageSegmenter,
@@ -16,7 +15,7 @@ import { WebcamController } from "./colorize/WebcamController";
 import { assert } from "./colorize/assert";
 import { WebcamButton } from "./colorize/WebcamButton";
 import { drawBlendShapes } from "./colorize/drawBlendShapes";
-import { drawLandmarksOnCanvas } from "./colorize/drawLandmarksOnCanvas";
+import { drawColorSamplingDebug } from "./colorize/drawColorSamplingDebug";
 import { img2canvas } from "./colorize/img2canvas";
 
 main();
@@ -28,7 +27,9 @@ loadFaceParser().catch(() => {
 
 function main() {
   const ctrl = new ImageSegmenterControl("IMAGE");
-  loadImageSegmenter(ctrl);
+  loadImageSegmenter(ctrl).catch((err: unknown) => {
+    console.error("Failed to load segmentation models:", err);
+  });
   const handleClick = init(ctrl);
 
   const imageContainers: HTMLCollectionOf<Element> =
@@ -74,7 +75,7 @@ function main() {
     if (!ctrl.loaded) {
       return;
     }
-    await ctrl.setRunningMode({
+    await ctrl.segment({
       mode: "VIDEO",
       videoFrame: video,
       timestamp: performance.now(),
@@ -85,24 +86,26 @@ function main() {
           video.videoWidth,
           video.videoHeight,
         ).data;
-        colorizeVideoMaskedObjects(
+
+        // Create a working copy for analysis (before colorization mutates it)
+        const analysisData = new Uint8ClampedArray(imageData);
+        // Colorize in-place
+        const colorized = colorizeVideoMaskedObjects(
           result,
-          new Uint8ClampedArray(imageData.buffer.slice(0)),
+          new Uint8ClampedArray(imageData),
         );
+
         window.dispatchEvent(
           new CustomEvent("analysis:colors", {
-            detail: analyzeImageCategories(
-              result,
-              new Uint8ClampedArray(imageData.buffer.slice(0)),
-            ),
+            detail: analyzeImageCategories(result, analysisData),
           }),
         );
-        const dataNew = new ImageData(
-          new Uint8ClampedArray(imageData.buffer.slice(0)),
-          video.videoWidth,
-          video.videoHeight,
+
+        canvasCtx.putImageData(
+          new ImageData(new Uint8ClampedArray(colorized.buffer as ArrayBuffer), video.videoWidth, video.videoHeight),
+          0,
+          0,
         );
-        canvasCtx.putImageData(dataNew, 0, 0);
         if (webcamController.webcamRunning === true) {
           window.requestAnimationFrame(webcamController.predictWebcam);
         }
@@ -123,16 +126,20 @@ function init(ctrl: ImageSegmenterControl) {
     canvasClick.classList.remove("removed");
     image.style.opacity = "0";
 
+    // Capture clean canvas from the original image BEFORE any overlay drawing
+    const canvas2 = document.createElement("canvas");
+    img2canvas(image, canvas2);
+
     const { promise: imageSegmenterCallbackHasBeenCalled, resolve } =
       Promise.withResolvers<void>();
 
     window.dispatchEvent(
       new CustomEvent("analysis:start", {
-        detail: { types: ["img1", "img_season"] },
+        detail: { types: ["img1", "img_season", "face_colors"] },
       }),
     );
 
-    await ctrl.setRunningMode({
+    await ctrl.segment({
       mode: "IMAGE",
       image: image,
       callback: (result) => {
@@ -143,44 +150,47 @@ function init(ctrl: ImageSegmenterControl) {
 
     await imageSegmenterCallbackHasBeenCalled;
 
+    assert(ctrl.faceLandmarker !== null, "faceLandmarker not loaded");
     const faceLandmarkerResult = ctrl.faceLandmarker.detect(image);
-    drawLandmarksOnCanvas(canvasClick, faceLandmarkerResult);
     drawBlendShapes(
       document.getElementById("image-blend-shapes")!,
       faceLandmarkerResult.faceBlendshapes,
     );
 
-    const canvas2 = document.createElement("canvas");
-    img2canvas(image, canvas2);
-    const cxt2 = canvas2.getContext("2d")!;
-    const colorAnalyzer = new FaceColorAnalyzer(canvas2, cxt2);
-    const faceColors = colorAnalyzer.analyzeFaceColors(
-      faceLandmarkerResult.faceLandmarks[0]!,
-    );
+    const landmarks = faceLandmarkerResult.faceLandmarks[0];
+    if (landmarks) {
+      const cxt2 = canvas2.getContext("2d")!;
+      const colorAnalyzer = new FaceColorAnalyzer(canvas2, cxt2);
+      const faceColors = colorAnalyzer.analyzeFaceColors(landmarks);
 
-    const resultsContainer = document.getElementById("results-container")!;
+      window.dispatchEvent(
+        new CustomEvent("analysis:face_colors", { detail: faceColors }),
+      );
 
-    // Show MediaPipe results immediately
-    displayColorSwatches(faceColors, resultsContainer);
+      try {
+        drawColorSamplingDebug(canvasClick, landmarks);
+      } catch {
+        // Debug overlay failed — non-fatal
+      }
 
-    // Async: refine lips/skin/hair/brows via face-parsing (better accuracy)
-    // When done, update the swatches in-place (iris stays from MediaPipe)
-    analyzeFaceWithParsing(canvas2)
-      .then((parsingColors) => {
-        if (!parsingColors) return;
-        displayColorSwatches(
-          {
-            ...faceColors,
-            lips:  parsingColors.lips,
-            skin:  parsingColors.skin,
-            brows: parsingColors.brows,
-          },
-          resultsContainer,
-        );
-      })
-      .catch(() => {
-        // Parsing failed — MediaPipe results remain visible
-      });
+      analyzeFaceWithParsing(canvas2)
+        .then((parsingColors) => {
+          if (!parsingColors) return;
+          window.dispatchEvent(
+            new CustomEvent("analysis:face_colors", {
+              detail: {
+                ...faceColors,
+                lips:  parsingColors.lips,
+                skin:  parsingColors.skin,
+                brows: parsingColors.brows,
+              },
+            }),
+          );
+        })
+        .catch(() => {
+          // Parsing failed — MediaPipe results remain visible
+        });
+    }
   }
 
   function processImageSegmenterResult(
@@ -201,7 +211,7 @@ function init(ctrl: ImageSegmenterControl) {
     canvasClick.height = height;
     const enhancedCategoryColors = analyzeImageCategories(
       result,
-      new Uint8ClampedArray(imageData.buffer.slice(0)),
+      new Uint8ClampedArray(imageData),
     );
     window.dispatchEvent(
       new CustomEvent("analysis:img1", { detail: enhancedCategoryColors }),
@@ -211,6 +221,7 @@ function init(ctrl: ImageSegmenterControl) {
         detail: determineSeasonalPalette(enhancedCategoryColors),
       }),
     );
+    assert(ctrl.imageSegmenter !== null, "imageSegmenter not loaded");
     const [uint8Array, category] = colorizeImgMaskedObjects(
       result,
       imageData,
