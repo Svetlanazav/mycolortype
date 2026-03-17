@@ -445,7 +445,18 @@ export class FaceColorAnalyzer {
       return this.calculateAverageColor(colors);
     }
 
-    const labs = colors.map((c) => this.rgbToLab(c));
+    // Pre-filter: remove the darkest 20% of pixels — these are eyelid
+    // shadows falling on the iris, not the actual iris color.
+    // This is gentler than the old "remove 60%" approach and only targets
+    // the shadow tail without biasing toward unnaturally bright colors.
+    const byBrightness = [...colors].sort(
+      (a, b) => this.getBrightness(b) - this.getBrightness(a),
+    );
+    const trimmed = byBrightness.slice(
+      0, Math.max(this.MIN_SAMPLES, Math.ceil(colors.length * 0.8)),
+    );
+
+    const labs = trimmed.map((c) => this.rgbToLab(c));
     const clusters = this.kMeansLab(labs, this.NUM_CLUSTERS);
     if (clusters.length === 0) return { r: 128, g: 128, b: 128 };
 
@@ -478,16 +489,25 @@ export class FaceColorAnalyzer {
       return this.calculateAverageColor(colors);
     }
 
-    const labs = colors.map((c) => this.rgbToLab(c));
+    // Pre-filter: strip out desaturated border pixels before clustering.
+    // The lip polygon edge blends into skin — those pixels have low HSV
+    // saturation. Removing the bottom 40% by saturation concentrates on
+    // actual lip tissue, making k-means much more accurate.
+    const withSat = colors.map((c) => ({ c, s: this.rgbToHsv(c).s }));
+    withSat.sort((a, b) => b.s - a.s);
+    const saturated = withSat
+      .slice(0, Math.max(this.MIN_SAMPLES, Math.ceil(withSat.length * 0.6)))
+      .map((x) => x.c);
+
+    const labs = saturated.map((c) => this.rgbToLab(c));
     const clusters = this.kMeansLab(labs, this.NUM_CLUSTERS);
     if (clusters.length === 0) return { r: 128, g: 128, b: 128 };
 
-    // Filter to clusters with at least 5% of total pixels (avoid noise)
-    const minSize = Math.max(3, Math.floor(colors.length * 0.05));
+    // Pick the cluster with highest chroma (most saturated = true lip tissue)
+    const minSize = Math.max(3, Math.floor(saturated.length * 0.05));
     const viable = clusters.filter((c) => c.size >= minSize);
     if (viable.length === 0) return this.labToRgb(clusters[0]!.center);
 
-    // Pick the cluster with highest chroma (most saturated = true lip tissue)
     const withChroma = viable.map((c) => ({
       ...c,
       chroma: Math.sqrt(c.center.a ** 2 + c.center.b ** 2),
@@ -499,17 +519,27 @@ export class FaceColorAnalyzer {
       ? clusters[0]!
       : withChroma[0]!;
 
-    const refined = labs.filter((l) => this.labDistance(l, chosen.center) <= 30);
-    if (refined.length < 3) return this.labToRgb(chosen.center);
+    // Refine: average the top 60% most saturated pixels in the chosen cluster
+    const inCluster = labs.filter((l) => this.labDistance(l, chosen.center) <= 30);
+    if (inCluster.length < 3) return this.labToRgb(chosen.center);
 
-    const avg = refined.reduce(
-      (acc, l) => ({ l: acc.l + l.l, a: acc.a + l.a, b: acc.b + l.b }),
+    // Map back to RGB to sort by saturation, then take top portion
+    const clusterWithSat = inCluster.map((l) => {
+      const rgb = this.labToRgb(l);
+      return { l, s: this.rgbToHsv(rgb).s };
+    });
+    clusterWithSat.sort((a, b) => b.s - a.s);
+    const topSaturated = clusterWithSat
+      .slice(0, Math.max(3, Math.ceil(clusterWithSat.length * 0.6)));
+
+    const avg = topSaturated.reduce(
+      (acc, x) => ({ l: acc.l + x.l.l, a: acc.a + x.l.a, b: acc.b + x.l.b }),
       { l: 0, a: 0, b: 0 },
     );
     return this.labToRgb({
-      l: avg.l / refined.length,
-      a: avg.a / refined.length,
-      b: avg.b / refined.length,
+      l: avg.l / topSaturated.length,
+      a: avg.a / topSaturated.length,
+      b: avg.b / topSaturated.length,
     });
   }
 
