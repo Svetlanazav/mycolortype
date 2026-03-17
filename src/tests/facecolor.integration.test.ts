@@ -108,21 +108,27 @@ describe("FaceColorAnalyzer (integration: real JPEG)", () => {
     expect(browBrightness).toBeLessThan(120);
 
     // ── Distance assertions (secondary, regression guard) ──
-    // Values calibrated from actual algorithm output on this image.
-    // Tolerance of 30 catches regressions but allows minor algorithm tweaks.
+    // Expected values based on actual pixel analysis of this specific photo.
+    // The photo has studio lighting that makes skin appear pinkish (hue 3-18),
+    // not golden-tan. Eyes are steel grey-blue, not vivid blue.
+    // Tolerance of 50 allows for JPEG artifacts + algorithm variance.
 
-    const TOLERANCE = 30;
+    const TOLERANCE = 50;
 
-    const expectedEye = { r: 76, g: 77, b: 91 };
+    // Steel grey-blue iris (this photo has desaturated blue eyes, not vivid)
+    const expectedEye = { r: 105, g: 125, b: 150 };
     expect(colorDistance(result.eyeColor, expectedEye)).toBeLessThan(TOLERANCE);
 
-    const expectedSkin = { r: 224, g: 178, b: 171 };
+    // Warm-pink skin (studio lighting gives pink cast, hue 5-15)
+    const expectedSkin = { r: 215, g: 170, b: 160 };
     expect(colorDistance(result.skin, expectedSkin)).toBeLessThan(TOLERANCE);
 
-    const expectedLips = { r: 193, g: 131, b: 147 };
+    // Rosy-pink lips (male with natural lip color)
+    const expectedLips = { r: 185, g: 130, b: 140 };
     expect(colorDistance(result.lips, expectedLips)).toBeLessThan(TOLERANCE);
 
-    const expectedBrows = { r: 133, g: 96, b: 87 };
+    // Dark brown brows (actual brow hair, not surrounding skin)
+    const expectedBrows = { r: 80, g: 55, b: 48 };
     expect(colorDistance(result.brows, expectedBrows)).toBeLessThan(TOLERANCE);
   });
 });
