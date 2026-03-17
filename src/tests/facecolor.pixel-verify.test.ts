@@ -340,3 +340,149 @@ describe("pixel verification: brown-eyes photo", () => {
     expect(d).toBeLessThan(35);
   });
 });
+
+// ── Dark skin photo (outdoor, darker complexion, dark eyes) ─────────────
+
+describe("pixel verification: dark-skin photo", () => {
+  let landmarks: NormalizedLandmark[];
+  let result: FaceColors;
+
+  beforeAll(async () => {
+    ({ landmarks, result } = await loadPhotoAndAnalyze(
+      "dark-skin-test.jpg",
+      "dark-skin-landmarks.json",
+    ));
+  });
+
+  it("iris: dark brown within ΔE 15", () => {
+    const leftGT = sampleIrisRingGT(468, [469, 470, 471, 472], landmarks);
+    const rightGT = sampleIrisRingGT(473, [474, 475, 476, 477], landmarks);
+    const combinedGT = averageColor([leftGT, rightGT]);
+
+    console.log("  IRIS GT L:", toHex(leftGT), "R:", toHex(rightGT), "C:", toHex(combinedGT));
+    console.log("  IRIS AL L:", toHex(result.leftIris), "R:", toHex(result.rightIris), "C:", toHex(result.eyeColor));
+
+    const dC = deltaE(result.eyeColor, combinedGT);
+    console.log("  ΔE combined:", dC.toFixed(1));
+
+    // Dark eyes: warm (r >= b)
+    expect(result.eyeColor.r).toBeGreaterThanOrEqual(result.eyeColor.b);
+    expect(dC).toBeLessThan(15);
+  });
+
+  it("skin: darker tone (r > b) within ΔE 20", () => {
+    const allPixels: RGB[] = [];
+    SKIN_INDICES.forEach((idx) => {
+      const lm = landmarks[idx]!;
+      allPixels.push(...sampleCircle(lm.x * imgW, lm.y * imgH, 8));
+    });
+    const skinGT = averageColor(allPixels);
+    const d = deltaE(result.skin, skinGT);
+    console.log("  SKIN GT:", toHex(skinGT), "AL:", toHex(result.skin), "ΔE:", d.toFixed(1));
+
+    expect(result.skin.r).toBeGreaterThan(result.skin.b);
+    expect(d).toBeLessThan(20);
+  });
+
+  it("lips: within ΔE 35 of central pixels", () => {
+    // Wider tolerance for dark skin: central lip landmarks [13,14] often
+    // land in the lip crease which is extremely dark on pressed/closed lips.
+    // The algorithm's polygon + chroma selection gives a more representative
+    // lip color than the crease average.
+    const centralPixels: RGB[] = [];
+    [13, 14].forEach((idx) => {
+      const lm = landmarks[idx]!;
+      centralPixels.push(...sampleCircle(lm.x * imgW, lm.y * imgH, 5));
+    });
+    const lipsGT = averageColor(centralPixels);
+    const d = deltaE(result.lips, lipsGT);
+    console.log("  LIPS GT:", toHex(lipsGT), "AL:", toHex(result.lips), "ΔE:", d.toFixed(1));
+    expect(d).toBeLessThan(35);
+  });
+
+  it("brows: close to raw average in hue", () => {
+    // On dark skin, brow hair ≈ surrounding skin in brightness.
+    // The "darker than average" assumption doesn't hold — both are dark.
+    // Instead, check that algorithm and GT are in the same color family.
+    const allPixels: RGB[] = [];
+    BROW_INDICES.forEach((idx) => {
+      const lm = landmarks[idx]!;
+      allPixels.push(...sampleCircle(lm.x * imgW, lm.y * imgH, 3));
+    });
+    const browGT = averageColor(allPixels);
+    const d = deltaE(result.brows, browGT);
+    console.log("  BROW GT:", toHex(browGT), "AL:", toHex(result.brows), "ΔE:", d.toFixed(1));
+
+    expect(d).toBeLessThan(15);
+  });
+});
+
+// ── Light eyes photo (outdoor, freckles, blue/grey-green eyes) ──────────
+
+describe("pixel verification: light-eyes photo", () => {
+  let landmarks: NormalizedLandmark[];
+  let result: FaceColors;
+
+  beforeAll(async () => {
+    ({ landmarks, result } = await loadPhotoAndAnalyze(
+      "green-eyes-test.jpg",
+      "green-eyes-landmarks.json",
+    ));
+  });
+
+  it("iris: light (b >= r or g >= r) within ΔE 15", () => {
+    const leftGT = sampleIrisRingGT(468, [469, 470, 471, 472], landmarks);
+    const rightGT = sampleIrisRingGT(473, [474, 475, 476, 477], landmarks);
+    const combinedGT = averageColor([leftGT, rightGT]);
+
+    console.log("  IRIS GT L:", toHex(leftGT), "R:", toHex(rightGT), "C:", toHex(combinedGT));
+    console.log("  IRIS AL L:", toHex(result.leftIris), "R:", toHex(result.rightIris), "C:", toHex(result.eyeColor));
+
+    const dC = deltaE(result.eyeColor, combinedGT);
+    console.log("  ΔE combined:", dC.toFixed(1));
+
+    // Light eyes: not heavily warm-brown (b or g should be close to or exceed r)
+    expect(result.eyeColor.b + result.eyeColor.g).toBeGreaterThan(result.eyeColor.r);
+    expect(dC).toBeLessThan(15);
+  });
+
+  it("skin: warm (r > b) within ΔE 20", () => {
+    const allPixels: RGB[] = [];
+    SKIN_INDICES.forEach((idx) => {
+      const lm = landmarks[idx]!;
+      allPixels.push(...sampleCircle(lm.x * imgW, lm.y * imgH, 8));
+    });
+    const skinGT = averageColor(allPixels);
+    const d = deltaE(result.skin, skinGT);
+    console.log("  SKIN GT:", toHex(skinGT), "AL:", toHex(result.skin), "ΔE:", d.toFixed(1));
+
+    expect(result.skin.r).toBeGreaterThan(result.skin.b);
+    expect(d).toBeLessThan(20);
+  });
+
+  it("lips: within ΔE 25 of central pixels", () => {
+    const centralPixels: RGB[] = [];
+    [13, 14].forEach((idx) => {
+      const lm = landmarks[idx]!;
+      centralPixels.push(...sampleCircle(lm.x * imgW, lm.y * imgH, 5));
+    });
+    const lipsGT = averageColor(centralPixels);
+    const d = deltaE(result.lips, lipsGT);
+    console.log("  LIPS GT:", toHex(lipsGT), "AL:", toHex(result.lips), "ΔE:", d.toFixed(1));
+    expect(d).toBeLessThan(25);
+  });
+
+  it("brows: darker than raw average", () => {
+    const allPixels: RGB[] = [];
+    BROW_INDICES.forEach((idx) => {
+      const lm = landmarks[idx]!;
+      allPixels.push(...sampleCircle(lm.x * imgW, lm.y * imgH, 3));
+    });
+    const browGT = averageColor(allPixels);
+    const d = deltaE(result.brows, browGT);
+    console.log("  BROW GT:", toHex(browGT), "AL:", toHex(result.brows), "ΔE:", d.toFixed(1));
+
+    expect(brightness(result.brows)).toBeLessThan(brightness(browGT));
+    expect(d).toBeLessThan(35);
+  });
+});
