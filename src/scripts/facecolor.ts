@@ -12,9 +12,21 @@ interface HSV {
   v: number;
 }
 
-interface ColorCluster {
-  colors: RGB[];
-  center: RGB;
+interface Lab {
+  l: number;
+  a: number;
+  b: number;
+}
+
+interface LabCluster {
+  center: Lab;
+  size: number;
+}
+
+interface WhiteBalance {
+  rScale: number;
+  gScale: number;
+  bScale: number;
 }
 
 export interface FaceColors {
@@ -32,24 +44,30 @@ export class FaceColorAnalyzer {
 
   private readonly SKIN_SAMPLE_RADIUS = 8;
   private readonly BROW_SAMPLE_RADIUS = 3;
-  private readonly PUPIL_BRIGHTNESS_THRESHOLD = 50;
-  private readonly IRIS_SATURATION_MIN = 0.10;
+  private readonly SCLERA_SAMPLE_RADIUS = 3;
+  private readonly PUPIL_BRIGHTNESS_THRESHOLD = 35;
+  private readonly IRIS_SATURATION_MIN = 0.05;
   private readonly SKIN_SATURATION_MIN = 0.05;
-  private readonly SKIN_SATURATION_MAX = 0.65;
+  private readonly SKIN_SATURATION_MAX = 0.80;
   private readonly BRIGHTNESS_MIN = 25;
   private readonly BRIGHTNESS_MAX = 245;
   private readonly NUM_CLUSTERS = 3;
   private readonly MIN_SAMPLES = 5;
+  private readonly WB_DAMPING = 0.6;
 
   constructor(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
     this.canvas = canvas;
     this.ctx = context;
   }
 
+  // ── Pixel access ──────────────────────────────────────────────────────
+
   private getPixelColor(x: number, y: number): RGB {
     const pixel = this.ctx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
     return { r: pixel[0]!, g: pixel[1]!, b: pixel[2]! };
   }
+
+  // ── Color space conversions ───────────────────────────────────────────
 
   private rgbToHsv(color: RGB): HSV {
     const r = color.r / 255;
@@ -69,29 +87,150 @@ export class FaceColorAnalyzer {
     return { h, s: max === 0 ? 0 : diff / max, v: max };
   }
 
+  private rgbToLab(color: RGB): Lab {
+    let rn = color.r / 255;
+    let gn = color.g / 255;
+    let bn = color.b / 255;
+    rn = rn > 0.04045 ? Math.pow((rn + 0.055) / 1.055, 2.4) : rn / 12.92;
+    gn = gn > 0.04045 ? Math.pow((gn + 0.055) / 1.055, 2.4) : gn / 12.92;
+    bn = bn > 0.04045 ? Math.pow((bn + 0.055) / 1.055, 2.4) : bn / 12.92;
+    const xr = (rn * 0.4124 + gn * 0.3576 + bn * 0.1805) * 100 / 95.047;
+    const yr = rn * 0.2126 + gn * 0.7152 + bn * 0.0722;
+    const zr = (rn * 0.0193 + gn * 0.1192 + bn * 0.9505) * 100 / 108.883;
+    const f = (t: number) =>
+      t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
+    return {
+      l: 116 * f(yr) - 16,
+      a: 500 * (f(xr) - f(yr)),
+      b: 200 * (f(yr) - f(zr)),
+    };
+  }
+
+  private labToRgb(lab: Lab): RGB {
+    const fy = (lab.l + 16) / 116;
+    const fx = lab.a / 500 + fy;
+    const fz = fy - lab.b / 200;
+    const cube = (v: number) =>
+      v ** 3 > 0.008856 ? v ** 3 : (v - 16 / 116) / 7.787;
+    const x = cube(fx) * 95.047;
+    const y = cube(fy) * 100.0;
+    const z = cube(fz) * 108.883;
+    const toSrgb = (c: number) =>
+      c > 0.0031308 ? 1.055 * Math.pow(c, 1 / 2.4) - 0.055 : 12.92 * c;
+    const clamp = (v: number) =>
+      Math.round(Math.max(0, Math.min(255, v * 255)));
+    return {
+      r: clamp(toSrgb(x / 100 * 3.2406 - y / 100 * 1.5372 - z / 100 * 0.4986)),
+      g: clamp(toSrgb(-x / 100 * 0.9689 + y / 100 * 1.8758 + z / 100 * 0.0415)),
+      b: clamp(toSrgb(x / 100 * 0.0557 - y / 100 * 0.2040 + z / 100 * 1.0570)),
+    };
+  }
+
   private getBrightness(color: RGB): number {
     return (color.r + color.g + color.b) / 3;
   }
 
+  // ── White balance from sclera ─────────────────────────────────────────
+
+  /**
+   * Sample sclera (white of eye) pixels between iris boundary and eye corners.
+   * The sclera should be near-white; any color cast indicates lighting shift.
+   */
+  private sampleScleraPixels(landmarks: NormalizedLandmark[]): RGB[] {
+    // Pairs: [iris boundary point, eye corner point]
+    // Left eye: 469 (lateral iris), 471 (medial iris); corners 33, 133
+    // Right eye: 474 (medial iris), 476 (lateral iris); corners 362, 263
+    const scleraPairs: Array<[number, number]> = [
+      [469, 33],   // left eye lateral sclera
+      [471, 133],  // left eye medial sclera
+      [474, 362],  // right eye medial sclera
+      [476, 263],  // right eye lateral sclera
+    ];
+
+    const colors: RGB[] = [];
+    for (const [irisIdx, cornerIdx] of scleraPairs) {
+      const irisPoint = landmarks[irisIdx]!;
+      const cornerPoint = landmarks[cornerIdx]!;
+      const mx = ((irisPoint.x + cornerPoint.x) / 2) * this.canvas.width;
+      const my = ((irisPoint.y + cornerPoint.y) / 2) * this.canvas.height;
+      if (mx < 0 || mx >= this.canvas.width || my < 0 || my >= this.canvas.height) continue;
+
+      const samples = this.sampleAreaColors(mx, my, this.SCLERA_SAMPLE_RADIUS, (color) => {
+        const brightness = this.getBrightness(color);
+        return brightness > 120 && brightness < 250;
+      });
+      colors.push(...samples);
+    }
+    return colors;
+  }
+
+  /**
+   * Estimate white balance correction from sclera pixels.
+   * Returns per-channel scale factors. If sclera is not reliably white
+   * (too saturated or too few samples), returns neutral (no correction).
+   */
+  private estimateWhiteBalance(scleraColors: RGB[]): WhiteBalance {
+    const NEUTRAL = { rScale: 1, gScale: 1, bScale: 1 };
+    if (scleraColors.length < 4) return NEUTRAL;
+
+    // Use the most neutral (least saturated) sclera pixels
+    const sorted = [...scleraColors].sort(
+      (a, b) => this.rgbToHsv(a).s - this.rgbToHsv(b).s,
+    );
+    const neutralCount = Math.max(4, Math.ceil(sorted.length * 0.5));
+    const neutral = sorted.slice(0, neutralCount);
+
+    // If even the most neutral pixels are too saturated, sclera is contaminated
+    const avgSaturation =
+      neutral.reduce((sum, c) => sum + this.rgbToHsv(c).s, 0) / neutral.length;
+    if (avgSaturation > 0.25) return NEUTRAL;
+
+    const avg = this.calculateAverageColor(neutral);
+    const gray = (avg.r + avg.g + avg.b) / 3;
+    if (gray < 80) return NEUTRAL; // too dark, unreliable
+
+    return {
+      rScale: 1 + (gray / Math.max(avg.r, 1) - 1) * this.WB_DAMPING,
+      gScale: 1 + (gray / Math.max(avg.g, 1) - 1) * this.WB_DAMPING,
+      bScale: 1 + (gray / Math.max(avg.b, 1) - 1) * this.WB_DAMPING,
+    };
+  }
+
+  private applyWhiteBalance(color: RGB, wb: WhiteBalance): RGB {
+    return {
+      r: Math.round(Math.max(0, Math.min(255, color.r * wb.rScale))),
+      g: Math.round(Math.max(0, Math.min(255, color.g * wb.gScale))),
+      b: Math.round(Math.max(0, Math.min(255, color.b * wb.bScale))),
+    };
+  }
+
+  private applyWhiteBalanceBatch(colors: RGB[], wb: WhiteBalance): RGB[] {
+    return colors.map((c) => this.applyWhiteBalance(c, wb));
+  }
+
+  // ── Skin validation ───────────────────────────────────────────────────
+
   private isValidSkinColor(color: RGB): boolean {
     const hsv = this.rgbToHsv(color);
     const brightness = this.getBrightness(color);
-    // Hue 0–80 covers light/dark skin (warm tones) + wrap-around 330–360
+    // Widened range: 0-100 covers warm/neutral/olive, 300-360 wraps red tones
     return (
       brightness > this.BRIGHTNESS_MIN &&
       brightness < this.BRIGHTNESS_MAX &&
       hsv.s >= this.SKIN_SATURATION_MIN &&
       hsv.s <= this.SKIN_SATURATION_MAX &&
-      ((hsv.h >= 0 && hsv.h <= 80) ||
-        (hsv.h >= 330 && hsv.h <= 360))
+      ((hsv.h >= 0 && hsv.h <= 100) || (hsv.h >= 300 && hsv.h <= 360))
     );
   }
 
-  // Annular ring sampling for iris.
-  // Samples pixels between pupilRadius and irisRadius, filtering extremes.
-  // Correct MediaPipe iris indices:
-  //   Left iris:  center=468, perimeter=[469,470,471,472]
-  //   Right iris: center=473, perimeter=[474,475,476,477]
+  // ── Sampling helpers ──────────────────────────────────────────────────
+
+  /**
+   * Annular ring sampling for iris.
+   * Samples pixels between pupilRadius and irisRadius, filtering extremes.
+   * No hue-based filtering — LAB clustering handles contamination from skin
+   * leak-through. This ensures brown/hazel irises are not mistakenly rejected.
+   */
   private sampleIrisRing(
     centerIdx: number,
     boundaryIndices: number[],
@@ -101,10 +240,6 @@ export class FaceColorAnalyzer {
     const cx = center.x * this.canvas.width;
     const cy = center.y * this.canvas.height;
 
-    // Use MINIMUM of perimeter distances as iris radius.
-    // MediaPipe perimeter includes top/bottom points that can be occluded by eyelids,
-    // making them farther from center than the actual iris edge.
-    // The minimum distance (usually left or right) is the true iris radius.
     const distances = boundaryIndices.map((idx) => {
       const p = landmarks[idx]!;
       return Math.sqrt(
@@ -114,8 +249,6 @@ export class FaceColorAnalyzer {
     });
     const irisRadius = Math.min(...distances);
 
-    // Pupil occupies ~45% of iris radius.
-    // Use 85% of irisRadius as outer bound to avoid sclera/eyelash contamination.
     const pupilRadius = irisRadius * 0.45;
     const outerRadius = irisRadius * 0.85;
     const r = Math.ceil(outerRadius);
@@ -132,13 +265,9 @@ export class FaceColorAnalyzer {
 
         const color = this.getPixelColor(x, y);
         const brightness = this.getBrightness(color);
-        // Exclude pupil overflow (too dark) and sclera reflections (too bright)
         if (brightness <= this.PUPIL_BRIGHTNESS_THRESHOLD || brightness >= this.BRIGHTNESS_MAX) continue;
-        // Exclude near-gray/desaturated pixels (eyelashes, shadows, sclera edge)
         const hsv = this.rgbToHsv(color);
         if (hsv.s < this.IRIS_SATURATION_MIN) continue;
-        // Exclude skin-tone pixels (hue 0-50) that leak in from surrounding skin
-        if (hsv.h >= 0 && hsv.h <= 50 && hsv.s < 0.4) continue;
         colors.push(color);
       }
     }
@@ -202,8 +331,6 @@ export class FaceColorAnalyzer {
 
   // Sample brow colors from MediaPipe brow landmark points
   private sampleBrowColors(landmarks: NormalizedLandmark[]): RGB[] {
-    // Left brow: 70 63 105 66 107 55 65 52 53 46
-    // Right brow: 300 293 334 296 336 285 295 282 283 276
     const browIndices = [
       70, 63, 105, 66, 107, 55, 65, 52, 53, 46,
       300, 293, 334, 296, 336, 285, 295, 282, 283, 276,
@@ -247,196 +374,212 @@ export class FaceColorAnalyzer {
     return colors;
   }
 
-  private colorDistance(color1: RGB, color2: RGB): number {
-    const rMean = (color1.r + color2.r) / 2;
-    const deltaR = color1.r - color2.r;
-    const deltaG = color1.g - color2.g;
-    const deltaB = color1.b - color2.b;
-    return Math.sqrt(
-      (2 + rMean / 256) * deltaR * deltaR +
-      4 * deltaG * deltaG +
-      (2 + (255 - rMean) / 256) * deltaB * deltaB,
-    );
+  // ── LAB k-means clustering ────────────────────────────────────────────
+
+  private labDistance(a: Lab, b: Lab): number {
+    return Math.sqrt((a.l - b.l) ** 2 + (a.a - b.a) ** 2 + (a.b - b.b) ** 2);
   }
 
-  private kMeansClustering(colors: RGB[]): ColorCluster[] {
-    if (colors.length < this.MIN_SAMPLES) {
-      return colors.length > 0 ? [{ colors, center: colors[0]! }] : [];
-    }
-    // Deterministic init: pick evenly-spaced samples sorted by brightness
-    const sorted = [...colors].sort(
-      (a, b) => (a.r + a.g + a.b) - (b.r + b.g + b.b),
-    );
-    const step = Math.max(1, Math.floor(sorted.length / this.NUM_CLUSTERS));
-    const clusters: ColorCluster[] = Array.from({ length: this.NUM_CLUSTERS }, (_, i) => ({
-      colors: [],
-      center: sorted[Math.min(i * step, sorted.length - 1)]!,
+  private kMeansLab(labs: Lab[], k: number): LabCluster[] {
+    if (labs.length === 0) return [];
+    const n = Math.min(k, labs.length);
+    // Sort by lightness for deterministic init
+    const sorted = [...labs].sort((a, b) => a.l - b.l);
+    const step = Math.max(1, Math.floor(sorted.length / n));
+    const centers: Lab[] = Array.from({ length: n }, (_, i) => ({
+      ...sorted[Math.min(i * step, sorted.length - 1)]!,
     }));
-    let changed = true;
-    let iterations = 0;
-    while (changed && iterations < 10) {
-      changed = false;
-      iterations++;
-      clusters.forEach((cluster) => (cluster.colors = []));
-      colors.forEach((color) => {
-        let minDistance = Infinity;
-        let nearestCluster = clusters[0]!;
-        clusters.forEach((cluster) => {
-          const distance = this.colorDistance(color, cluster.center);
-          if (distance < minDistance) {
-            minDistance = distance;
-            nearestCluster = cluster;
-          }
-        });
-        nearestCluster.colors.push(color);
-      });
-      clusters.forEach((cluster) => {
-        if (cluster.colors.length === 0) return;
-        const newCenter: RGB = {
-          r: Math.round(cluster.colors.reduce((s, c) => s + c.r, 0) / cluster.colors.length),
-          g: Math.round(cluster.colors.reduce((s, c) => s + c.g, 0) / cluster.colors.length),
-          b: Math.round(cluster.colors.reduce((s, c) => s + c.b, 0) / cluster.colors.length),
-        };
-        if (this.colorDistance(newCenter, cluster.center) > 1) {
-          changed = true;
-          cluster.center = newCenter;
+    const assignments = new Int32Array(labs.length);
+
+    for (let iter = 0; iter < 12; iter++) {
+      let changed = false;
+      for (let i = 0; i < labs.length; i++) {
+        const px = labs[i]!;
+        let minD = Infinity;
+        let best = 0;
+        for (let j = 0; j < n; j++) {
+          const c = centers[j]!;
+          const d = (px.l - c.l) ** 2 + (px.a - c.a) ** 2 + (px.b - c.b) ** 2;
+          if (d < minD) { minD = d; best = j; }
         }
-      });
+        if (assignments[i] !== best) { assignments[i] = best; changed = true; }
+      }
+      if (!changed) break;
+
+      const sums = Array.from({ length: n }, () => ({ l: 0, a: 0, b: 0, count: 0 }));
+      for (let i = 0; i < labs.length; i++) {
+        const px = labs[i]!;
+        const s = sums[assignments[i]!]!;
+        s.l += px.l; s.a += px.a; s.b += px.b; s.count++;
+      }
+      for (let j = 0; j < n; j++) {
+        const s = sums[j]!;
+        if (s.count > 0) {
+          centers[j] = { l: s.l / s.count, a: s.a / s.count, b: s.b / s.count };
+        }
+      }
     }
-    return clusters.filter((c) => c.colors.length > 0);
+
+    const sizes: number[] = new Array(n).fill(0) as number[];
+    for (const a of assignments) sizes[a] = (sizes[a] ?? 0) + 1;
+    return Array.from({ length: n }, (_, i) => ({
+      center: centers[i]!,
+      size: sizes[i] ?? 0,
+    }))
+      .filter((c) => c.size > 0)
+      .sort((a, b) => b.size - a.size);
   }
 
-  private getDominantColor(colors: RGB[]): RGB {
+  // ── Color extraction (LAB-based) ─────────────────────────────────────
+
+  /**
+   * Iris: pick the largest LAB cluster — the most common iris color.
+   * Unlike the old brightness/saturation sort, this does not bias toward
+   * unnaturally bright or saturated pixels. Brown eyes stay brown, not golden.
+   */
+  private getIrisColorLab(colors: RGB[]): RGB {
     if (colors.length === 0) return { r: 128, g: 128, b: 128 };
+    if (colors.length < this.MIN_SAMPLES) {
+      return this.calculateAverageColor(colors);
+    }
 
-    // Pass 1: find dominant cluster center
-    const clusters = this.kMeansClustering(colors);
-    clusters.sort((a, b) => b.colors.length - a.colors.length);
-    const center = clusters[0]?.center ?? colors[0]!;
+    const labs = colors.map((c) => this.rgbToLab(c));
+    const clusters = this.kMeansLab(labs, this.NUM_CLUSTERS);
+    if (clusters.length === 0) return { r: 128, g: 128, b: 128 };
 
-    // Pass 2: discard outlier pixels that are too different from the dominant center.
-    // Removes black eyelashes inside iris ring, bright skin pixels in brow area, etc.
-    const OUTLIER_THRESHOLD = 120;
-    const refined = colors.filter(
-      (c) => this.colorDistance(c, center) <= OUTLIER_THRESHOLD,
+    // Largest cluster = the dominant iris color
+    const dominant = clusters[0]!;
+    // Refine: average pixels close to dominant center (ΔE < 25)
+    const refined = labs.filter((l) => this.labDistance(l, dominant.center) <= 25);
+    if (refined.length < 3) return this.labToRgb(dominant.center);
+
+    const avg = refined.reduce(
+      (acc, l) => ({ l: acc.l + l.l, a: acc.a + l.a, b: acc.b + l.b }),
+      { l: 0, a: 0, b: 0 },
     );
-    if (refined.length < 3) return center;
-
-    const sum = refined.reduce(
-      (acc, c) => ({ r: acc.r + c.r, g: acc.g + c.g, b: acc.b + c.b }),
-      { r: 0, g: 0, b: 0 },
-    );
-    return {
-      r: Math.round(sum.r / refined.length),
-      g: Math.round(sum.g / refined.length),
-      b: Math.round(sum.b / refined.length),
-    };
+    return this.labToRgb({
+      l: avg.l / refined.length,
+      a: avg.a / refined.length,
+      b: avg.b / refined.length,
+    });
   }
 
-  // Brow-specific: pick the darkest cluster.
-  // Brow landmarks often land on skin between hairs. The actual brow color
-  // is always darker than surrounding skin, so we want the darkest cluster.
-  private getDarkestClusterColor(colors: RGB[]): RGB {
+  /**
+   * General dominant color via LAB k-means.
+   * Used for skin and lips. Picks the largest cluster and refines.
+   */
+  private getDominantColorLab(colors: RGB[]): RGB {
     if (colors.length === 0) return { r: 128, g: 128, b: 128 };
+    if (colors.length < this.MIN_SAMPLES) {
+      return this.calculateAverageColor(colors);
+    }
 
-    const clusters = this.kMeansClustering(colors);
-    // Sort by brightness ascending — darkest first
-    clusters.sort(
-      (a, b) => this.getBrightness(a.center) - this.getBrightness(b.center),
+    const labs = colors.map((c) => this.rgbToLab(c));
+    const clusters = this.kMeansLab(labs, this.NUM_CLUSTERS);
+    if (clusters.length === 0) return { r: 128, g: 128, b: 128 };
+
+    const dominant = clusters[0]!;
+    const refined = labs.filter((l) => this.labDistance(l, dominant.center) <= 30);
+    if (refined.length < 3) return this.labToRgb(dominant.center);
+
+    const avg = refined.reduce(
+      (acc, l) => ({ l: acc.l + l.l, a: acc.a + l.a, b: acc.b + l.b }),
+      { l: 0, a: 0, b: 0 },
     );
-    // Pick the darkest cluster that has enough pixels (at least 10% of total)
+    return this.labToRgb({
+      l: avg.l / refined.length,
+      a: avg.a / refined.length,
+      b: avg.b / refined.length,
+    });
+  }
+
+  /**
+   * Brows: pick the darkest LAB cluster (lowest L*).
+   * Brow landmarks often land on skin between hairs. The actual brow color
+   * is always darker than surrounding skin.
+   */
+  private getDarkestClusterColorLab(colors: RGB[]): RGB {
+    if (colors.length === 0) return { r: 128, g: 128, b: 128 };
+    if (colors.length < this.MIN_SAMPLES) {
+      return this.calculateAverageColor(colors);
+    }
+
+    const labs = colors.map((c) => this.rgbToLab(c));
+    const clusters = this.kMeansLab(labs, this.NUM_CLUSTERS);
+    if (clusters.length === 0) return { r: 128, g: 128, b: 128 };
+
+    // Sort by lightness ascending (darkest first)
+    clusters.sort((a, b) => a.center.l - b.center.l);
     const minSize = Math.max(3, Math.floor(colors.length * 0.1));
-    const darkest = clusters.find((c) => c.colors.length >= minSize) ?? clusters[0]!;
+    const darkest = clusters.find((c) => c.size >= minSize) ?? clusters[0]!;
 
-    const sum = darkest.colors.reduce(
-      (acc, c) => ({ r: acc.r + c.r, g: acc.g + c.g, b: acc.b + c.b }),
-      { r: 0, g: 0, b: 0 },
+    const refined = labs.filter((l) => this.labDistance(l, darkest.center) <= 25);
+    if (refined.length < 3) return this.labToRgb(darkest.center);
+
+    const avg = refined.reduce(
+      (acc, l) => ({ l: acc.l + l.l, a: acc.a + l.a, b: acc.b + l.b }),
+      { l: 0, a: 0, b: 0 },
     );
-    return {
-      r: Math.round(sum.r / darkest.colors.length),
-      g: Math.round(sum.g / darkest.colors.length),
-      b: Math.round(sum.b / darkest.colors.length),
-    };
+    return this.labToRgb({
+      l: avg.l / refined.length,
+      a: avg.a / refined.length,
+      b: avg.b / refined.length,
+    });
   }
 
-  // Iris-specific: pick the brightest, most saturated pixels.
-  // Dark pixels are eyelid shadow falling on the iris — not the true iris color.
-  // The visible iris color comes from well-lit pixels with decent saturation.
-  private getDominantSaturatedColor(colors: RGB[]): RGB {
-    if (colors.length === 0) return { r: 128, g: 128, b: 128 };
-
-    // Step 1: remove the darker 60% — eyelid shadows heavily contaminate the ring
-    const byBrightness = [...colors].sort(
-      (a, b) => this.getBrightness(b) - this.getBrightness(a),
-    );
-    const brightPortion = byBrightness.slice(0, Math.max(3, Math.ceil(colors.length * 0.4)));
-
-    // Step 2: from the bright portion, pick the top 50% most-saturated
-    const bySaturation = [...brightPortion].sort(
-      (a, b) => this.rgbToHsv(b).s - this.rgbToHsv(a).s,
-    );
-    const topN = Math.max(3, Math.ceil(bySaturation.length * 0.5));
-    const top = bySaturation.slice(0, topN);
-
-    const sum = top.reduce(
-      (acc, c) => ({ r: acc.r + c.r, g: acc.g + c.g, b: acc.b + c.b }),
-      { r: 0, g: 0, b: 0 },
-    );
-    return {
-      r: Math.round(sum.r / top.length),
-      g: Math.round(sum.g / top.length),
-      b: Math.round(sum.b / top.length),
-    };
-  }
+  // ── Main analysis ─────────────────────────────────────────────────────
 
   public analyzeFaceColors(landmarks: NormalizedLandmark[]): FaceColors {
-    // Left iris: center=468, perimeter=[469,470,471,472]
-    const leftIrisColors = this.sampleIrisRing(468, [469, 470, 471, 472], landmarks);
-    // Right iris: center=473, perimeter=[474,475,476,477]
-    const rightIrisColors = this.sampleIrisRing(473, [474, 475, 476, 477], landmarks);
+    // Step 1: Estimate white balance from sclera (white of eye)
+    // Any color cast from lighting is corrected before color extraction
+    const scleraColors = this.sampleScleraPixels(landmarks);
+    const wb = this.estimateWhiteBalance(scleraColors);
 
-    // Polygon-fill lips (excludes teeth area automatically)
-    const lipColors = this.sampleLipPolygon(landmarks);
+    // Step 2: Sample raw pixels from each facial region
+    const leftIrisRaw = this.sampleIrisRing(468, [469, 470, 471, 472], landmarks);
+    const rightIrisRaw = this.sampleIrisRing(473, [474, 475, 476, 477], landmarks);
+    const lipRaw = this.sampleLipPolygon(landmarks);
+    const browRaw = this.sampleBrowColors(landmarks);
 
-    // Brow colors from landmark points
-    const browColors = this.sampleBrowColors(landmarks);
-
-    // Skin from cheeks, forehead, nose bridge
-    const skinColors: RGB[] = [];
+    const skinRaw: RGB[] = [];
     const skinIndices = [
-      118, 119, 100, 36, 50,          // left cheek
-      329, 348, 347, 280, 266,         // right cheek
-      151, 108, 69, 109, 10, 338, 297, 337, // forehead
-      4, 195, 5,                       // nose tip
+      118, 119, 100, 36, 50,
+      329, 348, 347, 280, 266,
+      151, 108, 69, 109, 10, 338, 297, 337,
+      4, 195, 5,
     ];
     skinIndices.forEach((index) => {
       const point = landmarks[index]!;
       const px = point.x * this.canvas.width;
       const py = point.y * this.canvas.height;
-      // Skip landmarks that fall outside the image (e.g. forehead on cropped photos)
       if (px < 0 || px >= this.canvas.width || py < 0 || py >= this.canvas.height) return;
       const samples = this.sampleAreaColors(
-        px,
-        py,
-        this.SKIN_SAMPLE_RADIUS,
+        px, py, this.SKIN_SAMPLE_RADIUS,
         this.isValidSkinColor.bind(this),
       );
-      skinColors.push(...samples);
+      skinRaw.push(...samples);
     });
 
-    const leftIris  = this.getDominantSaturatedColor(leftIrisColors);
-    const rightIris = this.getDominantSaturatedColor(rightIrisColors);
-    // eyeColor: average of both irises using saturation-based selection
+    // Step 3: Apply white balance correction to all sampled pixels
+    const leftIrisColors = this.applyWhiteBalanceBatch(leftIrisRaw, wb);
+    const rightIrisColors = this.applyWhiteBalanceBatch(rightIrisRaw, wb);
+    const lipColors = this.applyWhiteBalanceBatch(lipRaw, wb);
+    const browColors = this.applyWhiteBalanceBatch(browRaw, wb);
+    const skinColors = this.applyWhiteBalanceBatch(skinRaw, wb);
+
+    // Step 4: Extract colors using perceptually uniform LAB clustering
+    const leftIris = this.getIrisColorLab(leftIrisColors);
+    const rightIris = this.getIrisColorLab(rightIrisColors);
     const combinedIris = [...leftIrisColors, ...rightIrisColors];
-    const eyeColor = this.getDominantSaturatedColor(combinedIris);
+    const eyeColor = this.getIrisColorLab(combinedIris);
 
     return {
       eyeColor,
       leftIris,
       rightIris,
-      lips:  this.getDominantColor(lipColors),
-      skin:  this.getDominantColor(skinColors),
-      brows: this.getDarkestClusterColor(browColors),
+      lips: this.getDominantColorLab(lipColors),
+      skin: this.getDominantColorLab(skinColors),
+      brows: this.getDarkestClusterColorLab(browColors),
     };
   }
 

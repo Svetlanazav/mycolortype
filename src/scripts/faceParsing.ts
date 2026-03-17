@@ -182,10 +182,10 @@ function getMaskedLabPixels(
     }
   }
 
-  // Try HSV filter first
+  // Try HSV filter first (relaxed thresholds for dark/pale skin)
   const filtered = allMasked.filter(([r, g, b]) => {
     const { s, v } = rgbToHsv(r, g, b);
-    return v >= 20 && v <= 235 && s >= 10;
+    return v >= 15 && v <= 240 && s >= 7;
   });
 
   // If too few pixels pass HSV filter (dark hair, brows, etc.) — fall back to
@@ -194,7 +194,7 @@ function getMaskedLabPixels(
     ? filtered
     : allMasked.filter(([r, g, b]) => {
         const { v } = rgbToHsv(r, g, b);
-        return v >= 15 && v <= 240;
+        return v >= 10 && v <= 245;
       });
 
   return pixels.map(([r, g, b]) => rgbToLab(r, g, b));
