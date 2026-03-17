@@ -151,13 +151,15 @@ export class FaceColorAnalyzer {
     for (const [irisIdx, cornerIdx] of scleraPairs) {
       const irisPoint = landmarks[irisIdx]!;
       const cornerPoint = landmarks[cornerIdx]!;
-      const mx = ((irisPoint.x + cornerPoint.x) / 2) * this.canvas.width;
-      const my = ((irisPoint.y + cornerPoint.y) / 2) * this.canvas.height;
+      // Sample at 30% from iris edge toward corner (closer to iris = more visible sclera)
+      const t = 0.30;
+      const mx = (irisPoint.x + t * (cornerPoint.x - irisPoint.x)) * this.canvas.width;
+      const my = (irisPoint.y + t * (cornerPoint.y - irisPoint.y)) * this.canvas.height;
       if (mx < 0 || mx >= this.canvas.width || my < 0 || my >= this.canvas.height) continue;
 
       const samples = this.sampleAreaColors(mx, my, this.SCLERA_SAMPLE_RADIUS, (color) => {
         const brightness = this.getBrightness(color);
-        return brightness > 120 && brightness < 250;
+        return brightness > 140 && brightness < 250;
       });
       colors.push(...samples);
     }
@@ -465,8 +467,55 @@ export class FaceColorAnalyzer {
   }
 
   /**
+   * Lips: pick the most chromatically saturated LAB cluster.
+   * The lip polygon includes transitional skin-border pixels which form
+   * the largest cluster but have low chroma. True lip tissue is a smaller
+   * but more colorful cluster. Selecting by chroma gives the real lip color.
+   */
+  private getLipColorLab(colors: RGB[]): RGB {
+    if (colors.length === 0) return { r: 128, g: 128, b: 128 };
+    if (colors.length < this.MIN_SAMPLES) {
+      return this.calculateAverageColor(colors);
+    }
+
+    const labs = colors.map((c) => this.rgbToLab(c));
+    const clusters = this.kMeansLab(labs, this.NUM_CLUSTERS);
+    if (clusters.length === 0) return { r: 128, g: 128, b: 128 };
+
+    // Filter to clusters with at least 5% of total pixels (avoid noise)
+    const minSize = Math.max(3, Math.floor(colors.length * 0.05));
+    const viable = clusters.filter((c) => c.size >= minSize);
+    if (viable.length === 0) return this.labToRgb(clusters[0]!.center);
+
+    // Pick the cluster with highest chroma (most saturated = true lip tissue)
+    const withChroma = viable.map((c) => ({
+      ...c,
+      chroma: Math.sqrt(c.center.a ** 2 + c.center.b ** 2),
+    }));
+    withChroma.sort((a, b) => b.chroma - a.chroma);
+
+    // Fallback: if all clusters have very low chroma (pale lips), use largest
+    const chosen = withChroma[0]!.chroma < 5
+      ? clusters[0]!
+      : withChroma[0]!;
+
+    const refined = labs.filter((l) => this.labDistance(l, chosen.center) <= 30);
+    if (refined.length < 3) return this.labToRgb(chosen.center);
+
+    const avg = refined.reduce(
+      (acc, l) => ({ l: acc.l + l.l, a: acc.a + l.a, b: acc.b + l.b }),
+      { l: 0, a: 0, b: 0 },
+    );
+    return this.labToRgb({
+      l: avg.l / refined.length,
+      a: avg.a / refined.length,
+      b: avg.b / refined.length,
+    });
+  }
+
+  /**
    * General dominant color via LAB k-means.
-   * Used for skin and lips. Picks the largest cluster and refines.
+   * Used for skin. Picks the largest cluster and refines.
    */
   private getDominantColorLab(colors: RGB[]): RGB {
     if (colors.length === 0) return { r: 128, g: 128, b: 128 };
@@ -577,7 +626,7 @@ export class FaceColorAnalyzer {
       eyeColor,
       leftIris,
       rightIris,
-      lips: this.getDominantColorLab(lipColors),
+      lips: this.getLipColorLab(lipColors),
       skin: this.getDominantColorLab(skinColors),
       brows: this.getDarkestClusterColorLab(browColors),
     };

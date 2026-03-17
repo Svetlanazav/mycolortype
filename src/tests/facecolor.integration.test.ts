@@ -117,19 +117,20 @@ describe("FaceColorAnalyzer (integration: real JPEG)", () => {
 
     // Steel grey-blue iris — LAB clustering picks the true dominant color,
     // not the brightest/most saturated pixels, giving a more muted grey-blue
-    const expectedEye = { r: 91, g: 98, b: 108 };
+    const expectedEye = { r: 89, g: 97, b: 111 };
     expect(colorDistance(result.eyeColor, expectedEye)).toBeLessThan(TOLERANCE);
 
-    // Warm-pink skin (studio lighting gives pink cast, hue 5-15)
-    const expectedSkin = { r: 217, g: 166, b: 151 };
+    // Warm-pink skin (WB-corrected, studio lighting compensated)
+    const expectedSkin = { r: 213, g: 165, b: 156 };
     expect(colorDistance(result.skin, expectedSkin)).toBeLessThan(TOLERANCE);
 
-    // Rosy-pink lips (natural lip color via LAB clustering)
-    const expectedLips = { r: 183, g: 117, b: 127 };
+    // Lip tissue color via chroma-based LAB cluster selection
+    // (picks the saturated lip cluster, not the washed-out skin border)
+    const expectedLips = { r: 170, g: 107, b: 122 };
     expect(colorDistance(result.lips, expectedLips)).toBeLessThan(TOLERANCE);
 
     // Dark brown brows (actual brow hair, not surrounding skin)
-    const expectedBrows = { r: 97, g: 66, b: 58 };
+    const expectedBrows = { r: 96, g: 67, b: 61 };
     expect(colorDistance(result.brows, expectedBrows)).toBeLessThan(TOLERANCE);
   });
 });
