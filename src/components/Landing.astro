@@ -29,24 +29,32 @@ import CommentSection from "../components/Comments.astro";
         </li>
       </ul>
     </nav>
-    <button
-      class="hidden md:block px-5 py-2 text-white rounded-full text-lg transition-colors bg-gradient-to-r from-accent-gold to-primary-plum hover:from-accent-rose hover:to-primary-mauve"
+    <a
+      href="#imageupload"
+      class="hidden md:inline-block px-5 py-2 text-white rounded-full text-lg transition-colors bg-linear-to-r from-accent-gold to-primary-plum hover:from-primary-mauve hover:to-primary-plum"
     >
       Get Started
-    </button>
+    </a>
   </div>
 </header>
 
 <!-- Hero Section -->
-<div class="bg-gradient-to-r from-primary-sand to-white">
+<div class="bg-linear-to-r from-primary-sand to-white">
   <section
     class="container mx-auto px-6 py-12 relative overflow-hidden md:overflow-visible"
   >
     <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
       <!-- Left Column -->
       <div
-        class="space-y-6 pb-5 pt-2 sm:pb-8 sm:pt-24 md:pb-8 md:pt-8 relative z-10"
+        class="space-y-6 pb-5 pt-2 sm:pb-8 sm:pt-24 md:pb-8 md:pt-8 relative z-10 hero-animate"
       >
+        <!-- Trust badges -->
+        <div class="flex flex-wrap gap-2">
+          <span class="hero-badge">✓ Free</span>
+          <span class="hero-badge">✓ AI-powered</span>
+          <span class="hero-badge">✓ Instant results</span>
+        </div>
+
         <h1
           class="font-display text-balance text-5xl/[0.9] font-normal tracking-tight text-primary-plum md:text-6xl/[0.9] lg:text-8xl/[0.9]"
         >
@@ -58,14 +66,9 @@ import CommentSection from "../components/Comments.astro";
           Transform your style with professional color analysis. Learn which
           colors make you look and feel your absolute best.
         </p>
-        <!-- <button
-          class="px-7 py-4 text-white rounded-full text-lg transition-colors bg-gradient-to-r from-accent-gold to-primary-plum hover:from-primary-mauve hover:to-primary-plum"
-        >
-          GET STARTED
-        </button> -->
         <a
           href="#imageupload"
-          class="px-7 py-4 inline-block text-white rounded-full text-lg transition-colors bg-gradient-to-r from-accent-gold to-primary-plum hover:from-primary-mauve hover:to-primary-plum"
+          class="block sm:inline-block text-center px-7 py-4 text-white rounded-full text-lg font-semibold transition-colors bg-linear-to-r from-accent-gold to-primary-plum hover:from-primary-mauve hover:to-primary-plum"
           >GET STARTED</a
         >
       </div>
@@ -239,7 +242,7 @@ import CommentSection from "../components/Comments.astro";
 <!-- Steps section -->
 <section
   id="startanalysis"
-  class="bg-gradient-to-r from-primary-sand to-white text-center py-16 px-4 relative"
+  class="bg-linear-to-r from-primary-sand to-white text-center py-16 px-4 relative"
 >
   <div class="container mx-auto max-w-4xl">
     <h2 class="text-3xl md:text-4xl font-bold text-primary-plum mb-4">
@@ -248,37 +251,57 @@ import CommentSection from "../components/Comments.astro";
     <p class="text-primary-mauve text-base md:text-lg mb-12 max-w-2xl mx-auto">
       Analyze colors that define you, your personality and your style.
     </p>
-    <!-- step1 -->
     <div class="grid md:grid-cols-3 gap-8 text-left max-w-3xl mx-auto">
-      <div
-        class="bg-primary-sand rounded-lg p-6 shadow-sm transition-transform hover:scale-105"
-      >
-        <div class="text-accent-gold font-semibold text-xl mb-3">Step 1</div>
-        <p class="text-primary-mauve">
-          Take a clear selfie in natural lighting that shows your face and hair.
-          Avoid harsh shadows or artificial lighting for best results.
+
+      <!-- Step 1 -->
+      <div class="bg-primary-sand rounded-lg p-6 shadow-sm transition-transform hover:scale-105">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="step-icon-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" />
+            </svg>
+          </div>
+          <span class="text-accent-gold font-bold text-sm uppercase tracking-widest">Step 1</span>
+        </div>
+        <h3 class="font-semibold text-primary-plum mb-2">Take your photo</h3>
+        <p class="text-primary-mauve text-sm leading-relaxed">
+          A clear selfie in natural light works best. Make sure your face and hair are fully visible.
         </p>
       </div>
-      <!-- step2 -->
-      <div
-        class="bg-primary-sand rounded-lg p-6 shadow-sm transition-transform hover:scale-105"
-      >
-        <div class="text-accent-gold font-semibold text-xl mb-3">Step 2</div>
-        <p class="text-primary-mauve">
-          Upload your photo or use your device's camera to take a new selfie
-          directly in the section below.
+
+      <!-- Step 2 -->
+      <div class="bg-primary-sand rounded-lg p-6 shadow-sm transition-transform hover:scale-105">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="step-icon-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+            </svg>
+          </div>
+          <span class="text-accent-gold font-bold text-sm uppercase tracking-widest">Step 2</span>
+        </div>
+        <h3 class="font-semibold text-primary-plum mb-2">Upload &amp; analyse</h3>
+        <p class="text-primary-mauve text-sm leading-relaxed">
+          Upload your photo or use your camera. Our AI analyses your skin, hair and eye colors instantly.
         </p>
       </div>
-      <!-- step3 -->
-      <div
-        class="bg-primary-sand rounded-lg p-6 shadow-sm transition-transform hover:scale-105"
-      >
-        <div class="text-accent-gold font-semibold text-xl mb-3">Step 3</div>
-        <p class="text-primary-mauve">
-          Discover your personalized color palette that complements your natural
-          features and enhances your unique style.
+
+      <!-- Step 3 -->
+      <div class="bg-primary-sand rounded-lg p-6 shadow-sm transition-transform hover:scale-105">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="step-icon-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42" />
+            </svg>
+          </div>
+          <span class="text-accent-gold font-bold text-sm uppercase tracking-widest">Step 3</span>
+        </div>
+        <h3 class="font-semibold text-primary-plum mb-2">Get your palette</h3>
+        <p class="text-primary-mauve text-sm leading-relaxed">
+          Receive your color season and a full personalized palette to elevate your everyday style.
         </p>
       </div>
+
     </div>
   </div>
   <div class="custom-shape-divider-top-1735509263">
@@ -378,7 +401,7 @@ import CommentSection from "../components/Comments.astro";
 <!-- How we do it -->
 <section
   id="features"
-  class="py-16 px-4 md:-top-64 bg-gradient-to-r from-primary-sand to-white"
+  class="py-16 px-4 md:-top-64 bg-linear-to-r from-primary-sand to-white"
 >
   <div class="container mx-auto my-4 max-w-6xl">
     <h2
@@ -448,6 +471,87 @@ import CommentSection from "../components/Comments.astro";
 
 <CommentSection />
 
+<!-- FAQ -->
+<section class="py-16 px-4 bg-white">
+  <div class="container mx-auto max-w-2xl">
+    <div class="text-center mb-10">
+      <h2 class="text-3xl md:text-4xl font-bold text-primary-plum mb-3">Common questions</h2>
+      <p class="text-primary-mauve text-base md:text-lg">Everything you need to know before you start.</p>
+    </div>
+    <div class="faq-list">
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          What is color season analysis?
+          <span class="faq-chevron" aria-hidden="true">+</span>
+        </summary>
+        <p class="faq-answer">
+          Color season analysis identifies which of 12 seasonal palettes (Spring, Summer, Autumn, Winter — each with sub-types) best matches your natural coloring. Wearing your season's colors makes you look more radiant and put-together.
+        </p>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          What kind of photo works best?
+          <span class="faq-chevron" aria-hidden="true">+</span>
+        </summary>
+        <p class="faq-answer">
+          A clear selfie in natural daylight works best. Make sure your face and hair are fully visible, avoid heavy filters or artificial light. No make-up gives the most accurate result.
+        </p>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          Is my photo stored or shared?
+          <span class="faq-chevron" aria-hidden="true">+</span>
+        </summary>
+        <p class="faq-answer">
+          No. Your photo is processed entirely in your browser — it never leaves your device and is never uploaded to any server. Your privacy is fully protected.
+        </p>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          How accurate is the AI analysis?
+          <span class="faq-chevron" aria-hidden="true">+</span>
+        </summary>
+        <p class="faq-answer">
+          Our AI uses MediaPipe face detection to extract your skin, hair, and eye colors, then maps them to seasonal characteristics. A confidence score is shown with every result. Natural lighting gives the best accuracy.
+        </p>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          Can I use it on my phone?
+          <span class="faq-chevron" aria-hidden="true">+</span>
+        </summary>
+        <p class="faq-answer">
+          Yes! MyColorType works fully in your mobile browser. Upload from your gallery or use your camera directly — no app needed.
+        </p>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-16 px-4 bg-linear-to-r from-primary-sand to-white">
+  <div class="container mx-auto max-w-xl text-center">
+    <h2 class="text-3xl md:text-4xl font-bold text-primary-plum mb-4">
+      Ready to find your colors?
+    </h2>
+    <p class="text-primary-mauve text-base md:text-lg mb-8">
+      It takes less than a minute. Free, private, no account needed.
+    </p>
+    <a
+      href="#imageupload"
+      class="inline-block px-8 py-4 text-white rounded-full text-lg font-semibold transition-colors bg-linear-to-r from-accent-gold to-primary-plum hover:from-primary-mauve hover:to-primary-plum shadow-md"
+    >
+      Discover my palette →
+    </a>
+  </div>
+</section>
+
 <!-- Footer -->
 <footer id="contact" class="bg-primary-plum text-white py-6 px-4">
   <div class="container mx-auto text-center">
@@ -455,3 +559,101 @@ import CommentSection from "../components/Comments.astro";
     <p class="text-sm">Made with ❤️ for color enthusiasts.</p>
   </div>
 </footer>
+
+<style>
+  /* Hero badges */
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    background: white;
+    color: #9D8189;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid #F5E6E8;
+    box-shadow: 0 1px 3px rgba(74, 51, 70, 0.07);
+  }
+
+  /* Hero entrance animation */
+  .hero-animate {
+    animation: heroFadeUp 0.6s ease both;
+  }
+
+  @keyframes heroFadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Steps icon */
+  .step-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #D4A373;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(74, 51, 70, 0.1);
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .faq-item {
+    border: 1px solid #F5E6E8;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: white;
+  }
+
+  .faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #4A3346;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-question:hover {
+    background: #fdf6f8;
+  }
+
+  .faq-chevron {
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: #D4A373;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+    line-height: 1;
+  }
+
+  .faq-item[open] .faq-chevron {
+    transform: rotate(45deg);
+  }
+
+  .faq-answer {
+    padding: 0.75rem 1.25rem 1rem;
+    font-size: 0.9rem;
+    color: #9D8189;
+    line-height: 1.6;
+    border-top: 1px solid #F5E6E8;
+    margin: 0;
+  }
+</style>

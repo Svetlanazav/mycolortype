@@ -203,6 +203,10 @@ export function getIrisColor(
     }
   }
 
+  if (irisPixels.length === 0) {
+    return { r: 128, g: 128, b: 128 };
+  }
+
   // Find dominant color group
   let maxCount = 0;
   let dominantQuantizedColor = "";
@@ -213,14 +217,25 @@ export function getIrisColor(
     }
   }
 
+  if (!dominantQuantizedColor) {
+    return irisPixels[0]!;
+  }
+
   // Calculate average color within the dominant color group
-  const [qR, qG, qB] = dominantQuantizedColor.split(",").map(Number);
+  const parts = dominantQuantizedColor.split(",").map(Number);
+  const qR = parts[0];
+  const qG = parts[1];
+  const qB = parts[2];
   const dominantPixels = irisPixels.filter(
     (pixel) =>
       Math.floor(pixel.r / 8) === qR &&
       Math.floor(pixel.g / 8) === qG &&
       Math.floor(pixel.b / 8) === qB
   );
+
+  if (dominantPixels.length === 0) {
+    return irisPixels[0]!;
+  }
 
   const averageColor = dominantPixels.reduce(
     (acc, pixel) => ({

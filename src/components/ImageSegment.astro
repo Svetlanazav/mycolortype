@@ -2,6 +2,7 @@
 import { AnalysisResults } from "./AnalysisResults";
 import { SeasonResults } from "./SeasonResults";
 import { SeasonPaletteResults } from "./SeasonPaletteResults";
+import { FaceColorResults } from "./FaceColorResults";
 ---
 
 <div class="min-h-screen bg-gray-950 text-white">
@@ -88,10 +89,9 @@ import { SeasonPaletteResults } from "./SeasonPaletteResults";
       <div class="p-4 text-xs text-gray-500 uppercase tracking-widest font-medium border-b border-gray-800">
         Face features
       </div>
-      <div
-        id="results-container"
-        class="p-6 flex flex-wrap gap-3"
-      ></div>
+      <div class="p-6 border-b border-gray-800">
+        <FaceColorResults client:only="react" />
+      </div>
 
       <!-- Recommended palette based on detected season -->
       <SeasonPaletteResults client:only="react" />

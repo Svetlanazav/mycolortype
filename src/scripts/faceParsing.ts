@@ -156,37 +156,48 @@ function kMeansLab(pixels: Lab[], k: number, maxIter = 10): Lab[] {
 
 /**
  * Extract LAB-converted pixels from image data where mask value > threshold.
- * Applies HSV pre-filtering: removes shadows (v<30), highlights (v>240),
- * and fully-desaturated pixels (s<15) that would skew the dominant color.
+ * Applies HSV pre-filtering: removes extreme shadows (v<20), extreme highlights
+ * (v>235), and fully-desaturated pixels (s<10).
+ * If the filter removes too many pixels (fewer than MIN_PIXELS remain),
+ * falls back to brightness-only filtering to handle dark hair/brows.
  */
 function getMaskedLabPixels(
   imageData: ImageData,
   mask: SegMask,
   threshold = 128,
 ): Lab[] {
-  const labs: Lab[] = [];
+  const MIN_PIXELS = 20;
   const scaleX = imageData.width / mask.width;
   const scaleY = imageData.height / mask.height;
+
+  const allMasked: Array<[number, number, number]> = [];
 
   for (let my = 0; my < mask.height; my++) {
     for (let mx = 0; mx < mask.width; mx++) {
       if ((mask.data[my * mask.width + mx] ?? 0) <= threshold) continue;
-
       const ix = Math.min(Math.round(mx * scaleX), imageData.width - 1);
       const iy = Math.min(Math.round(my * scaleY), imageData.height - 1);
       const idx = (iy * imageData.width + ix) * 4;
-      const r = imageData.data[idx]!;
-      const g = imageData.data[idx + 1]!;
-      const b = imageData.data[idx + 2]!;
-
-      // HSV pre-filter: drop shadows, highlights, and near-grey pixels
-      const { s, v } = rgbToHsv(r, g, b);
-      if (v < 30 || v > 240 || s < 15) continue;
-
-      labs.push(rgbToLab(r, g, b));
+      allMasked.push([imageData.data[idx]!, imageData.data[idx + 1]!, imageData.data[idx + 2]!]);
     }
   }
-  return labs;
+
+  // Try HSV filter first
+  const filtered = allMasked.filter(([r, g, b]) => {
+    const { s, v } = rgbToHsv(r, g, b);
+    return v >= 20 && v <= 235 && s >= 10;
+  });
+
+  // If too few pixels pass HSV filter (dark hair, brows, etc.) — fall back to
+  // brightness-only filter: just remove extreme shadows and highlights
+  const pixels = filtered.length >= MIN_PIXELS
+    ? filtered
+    : allMasked.filter(([r, g, b]) => {
+        const { v } = rgbToHsv(r, g, b);
+        return v >= 15 && v <= 240;
+      });
+
+  return pixels.map(([r, g, b]) => rgbToLab(r, g, b));
 }
 
 function combineMasks(mask1: SegMask, mask2: SegMask | undefined): SegMask {
@@ -201,7 +212,29 @@ function combineMasks(mask1: SegMask, mask2: SegMask | undefined): SegMask {
 function dominantColor(labs: Lab[], k = 3): RGB {
   if (labs.length === 0) return { r: 128, g: 128, b: 128 };
   const centers = kMeansLab(labs, Math.min(k, labs.length));
-  return labToRgb(centers[0]!);
+  if (centers.length === 0) return { r: 128, g: 128, b: 128 };
+  const center = centers[0]!;
+
+  // Pass 2: discard outlier pixels too far from dominant center in LAB space.
+  // ΔE ≈ 22 removes clearly different colors (black lashes, bright skin in brow region).
+  const THRESHOLD = 35;
+  const refined = labs.filter((l) => {
+    const dl = l.l - center.l;
+    const da = l.a - center.a;
+    const db = l.b - center.b;
+    return Math.sqrt(dl * dl + da * da + db * db) <= THRESHOLD;
+  });
+  if (refined.length < 5) return labToRgb(center);
+
+  const avg = refined.reduce(
+    (acc, l) => ({ l: acc.l + l.l, a: acc.a + l.a, b: acc.b + l.b }),
+    { l: 0, a: 0, b: 0 },
+  );
+  return labToRgb({
+    l: avg.l / refined.length,
+    a: avg.a / refined.length,
+    b: avg.b / refined.length,
+  });
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────
