@@ -296,8 +296,9 @@ export class FaceColorAnalyzer {
     return inside;
   }
 
-  // Polygon fill for lips: samples all pixels inside outer lip contour,
-  // excluding the mouth opening (teeth area).
+  // Polygon fill for lips: samples pixels inside a SHRUNK outer contour,
+  // excluding the mouth opening (teeth area). The outer polygon is pulled
+  // 25% toward the centroid to avoid the skin-lip transitional border.
   private sampleLipPolygon(landmarks: NormalizedLandmark[]): RGB[] {
     const outerIndices = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 409, 270, 269, 267, 0, 37, 39, 40, 185];
     const innerIndices = [78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191];
@@ -307,8 +308,17 @@ export class FaceColorAnalyzer {
       y: landmarks[idx]!.y * this.canvas.height,
     });
 
-    const outerPoly = outerIndices.map(toPixel);
+    const outerRaw = outerIndices.map(toPixel);
     const innerPoly = innerIndices.map(toPixel);
+
+    // Shrink outer polygon 25% toward its centroid to exclude skin-lip border
+    const cx = outerRaw.reduce((s, p) => s + p.x, 0) / outerRaw.length;
+    const cy = outerRaw.reduce((s, p) => s + p.y, 0) / outerRaw.length;
+    const SHRINK = 0.25;
+    const outerPoly = outerRaw.map((p) => ({
+      x: p.x + (cx - p.x) * SHRINK,
+      y: p.y + (cy - p.y) * SHRINK,
+    }));
 
     const minX = Math.floor(Math.min(...outerPoly.map((p) => p.x)));
     const maxX = Math.ceil(Math.max(...outerPoly.map((p) => p.x)));
@@ -590,7 +600,19 @@ export class FaceColorAnalyzer {
     // Sort by lightness ascending (darkest first)
     clusters.sort((a, b) => a.center.l - b.center.l);
     const minSize = Math.max(3, Math.floor(colors.length * 0.1));
-    const darkest = clusters.find((c) => c.size >= minSize) ?? clusters[0]!;
+
+    // Pick darkest cluster, but guard against noise/shadow:
+    // if the darkest cluster is tiny AND much darker than the next one
+    // (ΔL > 20), it's likely shadow — use the second darkest instead.
+    const candidates = clusters.filter((c) => c.size >= minSize);
+    let darkest: { center: Lab; size: number };
+    if (candidates.length >= 2 &&
+        candidates[0]!.size < colors.length * 0.15 &&
+        candidates[1]!.center.l - candidates[0]!.center.l > 20) {
+      darkest = candidates[1]!;
+    } else {
+      darkest = candidates[0] ?? clusters[0]!;
+    }
 
     const refined = labs.filter((l) => this.labDistance(l, darkest.center) <= 25);
     if (refined.length < 3) return this.labToRgb(darkest.center);
