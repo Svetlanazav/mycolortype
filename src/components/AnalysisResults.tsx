@@ -7,12 +7,24 @@ const CATEGORY_LABEL: Record<string, string> = {
   faceSkin: "Face skin",
 };
 
+const CATEGORY_ICON: Record<string, string> = {
+  hair: "✂",
+  bodySkin: "🤲",
+  faceSkin: "👤",
+};
+
 function toHex(r: number, g: number, b: number): string {
   return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 }
 
 function luminance(r: number, g: number, b: number): number {
   return 0.299 * r + 0.587 * g + 0.114 * b;
+}
+
+function confidenceLabel(pct: number): { text: string; color: string } {
+  if (pct >= 80) return { text: "High", color: "text-emerald-400" };
+  if (pct >= 50) return { text: "Medium", color: "text-amber-400" };
+  return { text: "Low", color: "text-red-400" };
 }
 
 type Status = "idle" | "loading" | "done";
@@ -32,8 +44,8 @@ export function AnalysisResults({ type }: { type: string }) {
       const detail = (e as CustomEvent<Record<string, ColorAnalysis>>).detail;
       setColors(
         Object.entries(detail).map(
-          ([key, value]) => [key, value] as [string, ColorAnalysis]
-        )
+          ([key, value]) => [key, value] as [string, ColorAnalysis],
+        ),
       );
       setStatus("done");
     }
@@ -48,20 +60,26 @@ export function AnalysisResults({ type }: { type: string }) {
   if (status === "idle") {
     return (
       <div className="flex flex-col items-center gap-2 py-4 text-center">
-        <p className="text-gray-500 text-sm">Click the photo to see color breakdown</p>
+        <p className="text-gray-500 text-sm">
+          Click the photo to see color breakdown
+        </p>
       </div>
     );
   }
 
   if (status === "loading") {
     return (
-      <div className="flex flex-col gap-3 w-full max-w-sm">
+      <div className="flex flex-col gap-3 w-full max-w-md">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-xl overflow-hidden flex items-stretch h-16 animate-pulse">
-            <div className="w-16 shrink-0 bg-gray-700" />
+          <div
+            key={i}
+            className="rounded-xl overflow-hidden flex items-stretch h-24 animate-pulse"
+          >
+            <div className="w-24 shrink-0 bg-gray-700" />
             <div className="bg-gray-800 flex-1 px-4 py-3 flex flex-col gap-2 justify-center">
-              <div className="h-2.5 bg-gray-700 rounded w-24" />
-              <div className="h-1.5 bg-gray-700 rounded w-full" />
+              <div className="h-3 bg-gray-700 rounded w-20" />
+              <div className="h-2 bg-gray-700 rounded w-full" />
+              <div className="h-2 bg-gray-700 rounded w-3/4" />
             </div>
           </div>
         ))}
@@ -70,58 +88,89 @@ export function AnalysisResults({ type }: { type: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 w-full max-w-sm">
+    <div className="flex flex-col gap-3 w-full max-w-md">
       {colors.map(([key, { color, confidence, shadowPercentage }]) => {
         const { r, g, b } = color;
         const hex = toHex(r, g, b);
         const lum = luminance(r, g, b);
-        const textColor = lum > 140 ? "#1a1a1a" : "#ffffff";
+        const textColor = lum > 120 ? "#1a1a1a" : "#ffffff";
+        const subTextColor = lum > 120 ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.6)";
         const confidencePct = Math.round(confidence * 100);
+        const { text: confLabel, color: confColor } =
+          confidenceLabel(confidencePct);
+        const shadowPct = Math.round(shadowPercentage);
 
         return (
           <div
             key={key}
             className="rounded-xl overflow-hidden shadow-md flex items-stretch"
           >
-            {/* Color swatch */}
+            {/* Large color swatch with hex + RGB */}
             <div
-              className="w-16 shrink-0 flex items-center justify-center text-xs font-mono font-bold"
+              className="w-24 shrink-0 flex flex-col items-center justify-center gap-0.5 px-2"
               style={{ backgroundColor: hex, color: textColor }}
             >
-              {hex}
+              <span className="text-xs opacity-60">
+                {CATEGORY_ICON[key] ?? ""}
+              </span>
+              <span className="text-sm font-mono font-bold">{hex}</span>
+              <span
+                className="text-[10px] font-mono"
+                style={{ color: subTextColor }}
+              >
+                {r}, {g}, {b}
+              </span>
             </div>
 
-            {/* Info */}
-            <div className="bg-gray-800 flex-1 px-4 py-3">
-              <p className="text-sm font-semibold text-white mb-2">
+            {/* Info panel */}
+            <div className="bg-gray-800 flex-1 px-4 py-3 flex flex-col justify-center gap-2">
+              <p className="text-sm font-semibold text-white">
                 {CATEGORY_LABEL[key] ?? key}
               </p>
-              <div className="flex flex-col gap-1">
-                {/* Confidence */}
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <span className="w-20 shrink-0">Confidence</span>
-                  <div className="flex-1 h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-accent-rose rounded-full"
-                      style={{ width: `${confidencePct}%` }}
-                    />
-                  </div>
-                  <span className="w-8 text-right">{confidencePct}%</span>
+
+              {/* Confidence */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-gray-500 w-16 shrink-0 uppercase tracking-wider">
+                  Confidence
+                </span>
+                <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${confidencePct}%`,
+                      backgroundColor:
+                        confidencePct >= 80
+                          ? "#34d399"
+                          : confidencePct >= 50
+                            ? "#fbbf24"
+                            : "#f87171",
+                    }}
+                  />
                 </div>
-                {/* Shadow */}
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <span className="w-20 shrink-0">Shadow</span>
+                <span
+                  className={`text-xs font-medium w-14 text-right ${confColor}`}
+                >
+                  {confidencePct}% {confLabel}
+                </span>
+              </div>
+
+              {/* Shadow */}
+              {shadowPct > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-gray-500 w-16 shrink-0 uppercase tracking-wider">
+                    Shadow
+                  </span>
                   <div className="flex-1 h-1.5 bg-gray-700 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gray-500 rounded-full"
-                      style={{ width: `${Math.round(shadowPercentage)}%` }}
+                      style={{ width: `${shadowPct}%` }}
                     />
                   </div>
-                  <span className="w-8 text-right">
-                    {Math.round(shadowPercentage)}%
+                  <span className="text-[10px] text-gray-500 w-14 text-right">
+                    {shadowPct}%
                   </span>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         );
