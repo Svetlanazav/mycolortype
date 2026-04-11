@@ -58,6 +58,7 @@ export function SeasonPaletteResults() {
       </div>
       <AnalysisPreview
         seasonalStyle={data.subSeason}
+        description={palette.description}
         primaryColors={palette.primary}
         accentColors={palette.accent}
       />

@@ -11,9 +11,9 @@ interface ColorPaletteProps {
 
 interface AnalysisContainerProps {
   seasonalStyle: string;
+  description: string;
   primaryColors: Color[];
   accentColors: Color[];
-  // Add other props as needed
 }
 
 const ColorPalette: React.FC<ColorPaletteProps> = ({ colors }) => (
@@ -39,6 +39,7 @@ const ColorPalette: React.FC<ColorPaletteProps> = ({ colors }) => (
 // ];
 export const AnalysisPreview: React.FC<AnalysisContainerProps> = ({
   seasonalStyle,
+  description,
   primaryColors,
   accentColors,
 }) => {
@@ -57,13 +58,7 @@ export const AnalysisPreview: React.FC<AnalysisContainerProps> = ({
               <h2 className="text-2xl font-semibold text-gray-800 mb-4">
                 Your Seasonal Style: {seasonalStyle}
               </h2>
-              <p className="text-gray-600 leading-relaxed">
-                Your color palette aligns with Spring characteristics, featuring
-                warm and bright undertones. This palette is characterized by
-                clear, warm, and fresh colors that reflect the vibrant energy of
-                spring. These colors will naturally enhance your features and
-                bring out your natural radiance.
-              </p>
+              <p className="text-gray-600 leading-relaxed">{description}</p>
             </div>
             <div className="mt-6 md:mt-0">
               <img

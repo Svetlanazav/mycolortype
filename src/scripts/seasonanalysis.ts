@@ -5,17 +5,17 @@ import type { ColorAnalysis } from "../scripts/avrcolorenhanced";
 // Types for seasonal color analysis
 type Season = "Spring" | "Summer" | "Autumn" | "Winter";
 type SubSeason =
+  | "True Spring"
   | "Light Spring"
-  | "Warm Spring"
   | "Bright Spring"
+  | "True Summer"
   | "Light Summer"
-  | "Cool Summer"
   | "Soft Summer"
+  | "True Autumn"
   | "Soft Autumn"
-  | "Warm Autumn"
-  | "Deep Autumn"
-  | "Deep Winter"
-  | "Cool Winter"
+  | "Dark Autumn"
+  | "True Winter"
+  | "Dark Winter"
   | "Bright Winter";
 
 export interface SeasonalCharacteristics {
@@ -198,25 +198,25 @@ function determineSubSeason(
     case "Spring":
       if (value === "light") return "Light Spring";
       if (contrast === "high" || intensity === "bright") return "Bright Spring";
-      return "Warm Spring";
+      return "True Spring";
 
     case "Summer":
       if (value === "light" && intensity === "soft") return "Light Summer";
       if (intensity === "soft") return "Soft Summer";
-      return "Cool Summer";
+      return "True Summer";
 
     case "Autumn":
       if (intensity === "soft" || contrast === "low") return "Soft Autumn";
-      if (value === "deep") return "Deep Autumn";
-      return "Warm Autumn";
+      if (value === "deep") return "Dark Autumn";
+      return "True Autumn";
 
     case "Winter":
-      if (value === "deep") return "Deep Winter";
+      if (value === "deep") return "Dark Winter";
       if (contrast === "high" || intensity === "bright") return "Bright Winter";
-      return "Cool Winter";
+      return "True Winter";
 
     default:
-      return undertone === "warm" ? "Warm Spring" : "Cool Winter";
+      return undertone === "warm" ? "True Spring" : "True Winter";
   }
 }
 

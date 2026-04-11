@@ -272,6 +272,7 @@ const ImageUploadContainer: React.FC = () => {
           {step === 3 && (
             <AnalysisPreview
               seasonalStyle={"Spring"}
+              description={"Warm and vibrant — your best colors bring out your natural glow."}
               primaryColors={samplePalette}
               accentColors={samplePalette}
             />
