@@ -7,50 +7,55 @@ const homeHref = withBase("");
 const blogHref = withBase("blog");
 ---
 
-<!-- Header -->
-<header class="bg-primary-plum text-white py-4 relative z-50">
-  <div class="container mx-auto flex justify-between items-center px-4">
-    <a href={homeHref} class="text-2xl font-bold">MyColorType</a>
-    <nav>
-      <button
-        id="menuToggle"
-        type="button"
-        class="md:hidden bg-primary-mauve px-3 py-2 rounded"
-        aria-controls="siteNav"
-        aria-expanded="false"
-        aria-label="Open navigation menu"
-      >
-        Menu
-      </button>
-      <ul id="siteNav" class="site-nav font-medium md:space-x-5 lg:space-x-10">
-        <li>
-          <a href="#startanalysis" class="hover:text-accent-gold">How to start</a>
-        </li>
-        <li>
-          <a href="#coloranalysis" class="hover:text-accent-gold">Color Analysis</a>
-        </li>
-        <li><a href="#features" class="hover:text-accent-gold">Features</a></li>
-        <li>
-          <a href={blogHref} class="hover:text-accent-gold">Blog</a>
-        </li>
-        <li>
-          <a href="#testimonials" class="hover:text-accent-gold">Reviews</a>
-        </li>
-      </ul>
-    </nav>
-    <a
-      href="#imageupload"
-      class="hidden md:inline-block px-5 py-2 text-white rounded-full text-lg transition-colors bg-linear-to-r from-accent-gold-deep to-primary-plum hover:from-primary-mauve hover:to-primary-plum"
-    >
-      Get Started
-    </a>
-  </div>
-</header>
-
-<!-- Hero Section -->
+<!-- Hero Section — the header sits inside this gradient rather than on a bar
+     of its own, so it reads as part of the page instead of a separate block. -->
 <div class="bg-linear-to-r from-primary-sand to-white">
+  <header class="relative z-50 py-5 text-primary-plum">
+    <div class="container mx-auto flex justify-between items-center gap-4 px-6">
+      <a href={homeHref} class="text-2xl font-bold tracking-tight">MyColorType</a>
+
+      <nav class="flex items-center gap-6">
+        <button
+          id="menuToggle"
+          type="button"
+          class="menu-toggle"
+          aria-controls="siteNav"
+          aria-expanded="false"
+          aria-label="Open navigation menu"
+        >
+          <span class="menu-bars" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+        </button>
+
+        <ul id="siteNav" class="site-nav font-medium md:gap-6 lg:gap-8">
+          <li>
+            <a href="#startanalysis" class="nav-link">How to start</a>
+          </li>
+          <li>
+            <a href="#coloranalysis" class="nav-link">Color Analysis</a>
+          </li>
+          <li><a href="#features" class="nav-link">Features</a></li>
+          <li>
+            <a href={blogHref} class="nav-link">Blog</a>
+          </li>
+          <li>
+            <a href="#testimonials" class="nav-link">Reviews</a>
+          </li>
+        </ul>
+
+        <a
+          href="#imageupload"
+          class="hidden md:inline-block text-base font-semibold text-accent-gold-deep border-b-2 border-accent-gold-deep/40 hover:border-accent-gold-deep transition-colors"
+        >
+          Get Started
+        </a>
+      </nav>
+    </div>
+  </header>
+
   <section
-    class="container mx-auto px-6 py-12 relative overflow-hidden md:overflow-visible"
+    class="container mx-auto px-6 pb-12 pt-2 relative overflow-hidden md:overflow-visible"
   >
     <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
       <!-- Left Column -->
@@ -626,9 +631,92 @@ const blogHref = withBase("blog");
 </script>
 
 <style>
-  /* Mobile nav: hidden by default, drops below the header when opened.
-     Uses explicit rules rather than Tailwind's `hidden`, because `hidden`
-     and `flex` set the same property and source order decides the winner. */
+  /* Nav links are plain text on the hero gradient — there is no header bar to
+     sit on, so they carry a hover underline instead of a background change.
+     Display is set explicitly rather than with Tailwind's `hidden`, because
+     `hidden` and `flex` set the same property and source order picks the
+     winner regardless of class order. */
+  .nav-link {
+    position: relative;
+    padding-bottom: 2px;
+    transition: color 0.2s ease;
+  }
+
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1.5px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s ease;
+  }
+
+  .nav-link:hover {
+    color: var(--color-accent-gold-deep);
+  }
+
+  .nav-link:hover::after,
+  .nav-link:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  /* Hamburger: three bars that fold into an X while the menu is open. */
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-right: -0.5rem;
+    background: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .menu-bars {
+    display: block;
+    position: relative;
+    width: 22px;
+    height: 16px;
+  }
+
+  .menu-bars span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition:
+      transform 0.25s ease,
+      opacity 0.2s ease;
+  }
+
+  .menu-bars span:nth-child(1) {
+    top: 0;
+  }
+  .menu-bars span:nth-child(2) {
+    top: 7px;
+  }
+  .menu-bars span:nth-child(3) {
+    top: 14px;
+  }
+
+  .menu-toggle[aria-expanded="true"] .menu-bars span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .menu-toggle[aria-expanded="true"] .menu-bars span:nth-child(2) {
+    opacity: 0;
+  }
+  .menu-toggle[aria-expanded="true"] .menu-bars span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
   .site-nav {
     display: none;
   }
@@ -636,22 +724,30 @@ const blogHref = withBase("blog");
   .site-nav.open {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
-    padding: 1rem 1.5rem;
-    background: var(--color-primary-plum);
-    box-shadow: 0 8px 24px rgba(74, 51, 70, 0.25);
+    padding: 0.5rem 1.5rem 1rem;
+    background: #fff;
+    border-top: 1px solid var(--color-primary-sand);
+    box-shadow: 0 12px 28px rgba(74, 51, 70, 0.12);
   }
 
   .site-nav.open a {
     display: block;
-    padding: 0.5rem 0;
+    padding: 0.75rem 0;
+  }
+
+  .site-nav.open li + li {
+    border-top: 1px solid var(--color-primary-sand);
   }
 
   @media (min-width: 768px) {
+    .menu-toggle {
+      display: none;
+    }
+
     .site-nav,
     .site-nav.open {
       display: flex;
@@ -659,11 +755,11 @@ const blogHref = withBase("blog");
       position: static;
       padding: 0;
       background: none;
+      border-top: 0;
       box-shadow: none;
     }
   }
 
-  /* Hero badges */
   /* Icons are drawn rather than typed: ✓ and → are absent from Helvetica, so
      the browser silently substituted another face for those glyphs alone. */
   .badge-icon {

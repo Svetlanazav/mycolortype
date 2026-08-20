@@ -77,6 +77,27 @@ Added `src/scripts/textOn.ts`, which picks between near-black and white by
 *measured* contrast and derives a muted secondary color that fades as far as it
 can while still clearing 4.5:1. All four call sites now use it.
 
+## Header: bar removed
+
+The plum bar made the header read as a separate block. It is gone: the `<header>`
+now lives *inside* the hero's gradient wrapper, so it shares that background
+instead of sitting on one of its own, and the links are plain plum text with a
+hover underline that wipes in. "Get Started" is a gold underlined text link
+rather than a filled pill, so the header carries no solid shapes at all.
+
+On mobile the "Menu" word is replaced by a hamburger — three bars that rotate
+into an X while the panel is open, driven purely off `aria-expanded` so the icon
+state and the assistive state cannot drift apart. The dropdown panel switched
+from plum to white with hairline separators, matching the now-light header.
+
+Note: `.menu-toggle` sets its own `display`, which beat Tailwind's `md:hidden`
+and left the hamburger visible on desktop. Visibility is handled in the same
+media query as `.site-nav` instead — the third time this display collision has
+come up in this file.
+
+Contrast after the change: plum on the sand gradient and gold-deep for the CTA
+both clear AA, and the landing page still audits clean.
+
 ## Known residuals
 
 Both are visual-design calls rather than defects, so they were left for a
