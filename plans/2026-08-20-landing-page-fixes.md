@@ -43,15 +43,23 @@ Verified end-to-end with a 10 MB noise-filled 4032×3024 fixture: data URL
 13.9 MB → stored 1.06 MB at 1600×1200, navigation succeeds, and the analysis
 page picks the photo up.
 
-### 3. The typeface never loaded
+### 3. The typeface was never actually chosen
 
 `body { font-family: "Space Grotesk" }` was set, but there was no `@font-face`,
-no stylesheet link, and no `public/fonts` — `document.fonts.size` was 0, so the
-whole site silently rendered in the system sans-serif. The `font-display` class
-on the hero heading was also a no-op, since `--font-display` was not in `@theme`.
+no stylesheet link, and no `public/fonts` — `document.fonts.size` was 0. Every
+visitor fell through to their browser's default sans-serif, which means the site
+looked different depending on the platform: Helvetica on macOS, Arial on
+Windows, Roboto on Android. The `font-display` class on the hero heading was
+also a no-op, since `--font-display` was not in `@theme`.
 
-Added the Google Fonts link (with preconnect, `display=swap`) and `--font-sans`
-/ `--font-display` tokens. Verified: weights 400/500/600/700 report `loaded`.
+Space Grotesk was loaded first, then dropped: the Helvetica that macOS visitors
+had been seeing is the preferred look. The stack is now named explicitly —
+`Helvetica, "Helvetica Neue", Arial, sans-serif` — as `--font-sans` and
+`--font-display`, so the appearance is deliberate and consistent rather than a
+per-browser accident, and no webfont is fetched at all.
+
+Verified via CDP `CSS.getPlatformFontsForNode`: headings and body both render
+in Helvetica, `document.fonts.size` is 0, and no font host is contacted.
 
 ### 4. Contrast below WCAG AA
 

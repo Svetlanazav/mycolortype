@@ -53,7 +53,7 @@ export function SeasonPaletteResults() {
 
   return (
     <div className="border-t border-gray-800 mt-4">
-      <div className="p-4 text-xs text-gray-500 uppercase tracking-widest font-medium">
+      <div className="p-4 text-xs text-gray-400 uppercase tracking-widest font-medium">
         Recommended palette · {data.subSeason}
       </div>
       <AnalysisPreview

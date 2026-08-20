@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { FaceColors } from "../scripts/facecolor";
+import { textOn, mutedTextOn } from "../scripts/textOn";
 
 type Status = "idle" | "loading" | "done";
 
@@ -11,10 +12,6 @@ interface RGB {
 
 function toHex({ r, g, b }: RGB): string {
   return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
-}
-
-function luminance({ r, g, b }: RGB): number {
-  return 0.299 * r + 0.587 * g + 0.114 * b;
 }
 
 function rgbString({ r, g, b }: RGB): string {
@@ -32,9 +29,8 @@ function ColorCard({
   size?: "sm" | "md" | "lg";
 }) {
   const hex = toHex(color);
-  const lum = luminance(color);
-  const textColor = lum > 120 ? "text-gray-900" : "text-white";
-  const subTextColor = lum > 120 ? "text-gray-700" : "text-white/70";
+  const textColor = textOn(color);
+  const subTextColor = mutedTextOn(color);
   const heights = { sm: "h-16", md: "h-20", lg: "h-24" };
 
   return (
@@ -43,10 +39,10 @@ function ColorCard({
         className={`${heights[size]} w-full flex flex-col items-center justify-center relative`}
         style={{ backgroundColor: rgbString(color) }}
       >
-        <span className={`text-sm font-mono font-bold ${textColor}`}>
+        <span className="text-sm font-mono font-bold" style={{ color: textColor }}>
           {hex}
         </span>
-        <span className={`text-[10px] font-mono ${subTextColor}`}>
+        <span className="text-[10px] font-mono" style={{ color: subTextColor }}>
           {color.r}, {color.g}, {color.b}
         </span>
       </div>
@@ -68,9 +64,8 @@ function IrisPair({
   combined: RGB;
 }) {
   const hex = toHex(combined);
-  const lum = luminance(combined);
-  const textColor = lum > 120 ? "text-gray-900" : "text-white";
-  const subTextColor = lum > 120 ? "text-gray-700" : "text-white/70";
+  const textColor = textOn(combined);
+  const subTextColor = mutedTextOn(combined);
 
   return (
     <div className="rounded-xl overflow-hidden shadow-md">
@@ -93,9 +88,7 @@ function IrisPair({
           className="flex-1 h-8 flex items-center justify-center"
           style={{ backgroundColor: rgbString(left) }}
         >
-          <span
-            className={`text-[10px] font-mono ${luminance(left) > 120 ? "text-gray-700" : "text-white/70"}`}
-          >
+          <span className="text-[10px] font-mono" style={{ color: textOn(left) }}>
             L {toHex(left)}
           </span>
         </div>
@@ -104,9 +97,7 @@ function IrisPair({
           className="flex-1 h-8 flex items-center justify-center"
           style={{ backgroundColor: rgbString(right) }}
         >
-          <span
-            className={`text-[10px] font-mono ${luminance(right) > 120 ? "text-gray-700" : "text-white/70"}`}
-          >
+          <span className="text-[10px] font-mono" style={{ color: textOn(right) }}>
             R {toHex(right)}
           </span>
         </div>
@@ -145,7 +136,7 @@ export function FaceColorResults() {
   if (status === "idle") {
     return (
       <div className="flex flex-col items-center gap-2 py-6 text-center">
-        <p className="text-gray-500 text-xs">
+        <p className="text-gray-400 text-xs">
           Click the photo to detect face colors
         </p>
       </div>

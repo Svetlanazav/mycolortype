@@ -25,7 +25,7 @@ const ColorPalette: React.FC<ColorPaletteProps> = ({ colors }) => (
           style={{ backgroundColor: color.hex }}
         />
         <span className="text-sm text-gray-600">{color.name}</span>
-        <span className="text-xs text-gray-400">{color.hex}</span>
+        <span className="text-xs text-gray-500">{color.hex}</span>
       </div>
     ))}
   </div>

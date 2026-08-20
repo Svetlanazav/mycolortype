@@ -59,9 +59,9 @@ const blogHref = withBase("blog");
       >
         <!-- Trust badges -->
         <div class="flex flex-wrap gap-2">
-          <span class="hero-badge">✓ Free</span>
-          <span class="hero-badge">✓ AI-powered</span>
-          <span class="hero-badge">✓ Instant results</span>
+          <span class="hero-badge"><svg class="badge-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 4.5" /></svg>Free</span>
+          <span class="hero-badge"><svg class="badge-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 4.5" /></svg>AI-powered</span>
+          <span class="hero-badge"><svg class="badge-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 4.5" /></svg>Instant results</span>
         </div>
 
         <h1
@@ -400,7 +400,7 @@ const blogHref = withBase("blog");
               href={blogHref}
               class="text-sm/6 font-semibold text-accent-gold-deep"
             >
-              Read more in our blog <span aria-hidden="true">&rarr;</span>
+              Read more in our blog <svg class="cta-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8h11M9.5 4l4 4-4 4" /></svg>
             </a>
           </div>
         </div>
@@ -580,7 +580,7 @@ const blogHref = withBase("blog");
       href="#imageupload"
       class="inline-block px-8 py-4 text-white rounded-full text-lg font-semibold transition-colors bg-linear-to-r from-accent-gold-deep to-primary-plum hover:from-primary-mauve hover:to-primary-plum shadow-md"
     >
-      Discover my palette →
+      Discover my palette <svg class="cta-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8h11M9.5 4l4 4-4 4" /></svg>
     </a>
   </div>
 </section>
@@ -664,10 +664,26 @@ const blogHref = withBase("blog");
   }
 
   /* Hero badges */
+  /* Icons are drawn rather than typed: ✓ and → are absent from Helvetica, so
+     the browser silently substituted another face for those glyphs alone. */
+  .badge-icon {
+    width: 0.85em;
+    height: 0.85em;
+    flex-shrink: 0;
+  }
+
+  .cta-arrow {
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    vertical-align: -0.125em;
+    margin-left: 0.35em;
+  }
+
   .hero-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.35rem;
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     background: white;

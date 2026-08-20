@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { SeasonalCharacteristics } from "../scripts/seasonanalysis";
+import { hexToRgb, mutedTextOn, textOn } from "../scripts/textOn";
 
 const SEASON_COLORS: Record<string, string> = {
   Spring: "#F9C784",
@@ -67,6 +68,7 @@ export function SeasonResults({ type }: { type: string }) {
   const { season, subSeason, characteristics, confidence } = data;
   const accentColor = SEASON_COLORS[season] ?? "#9D8189";
   const confidencePct = Math.round(confidence * 100);
+  const accentRgb = hexToRgb(accentColor);
 
   return (
     <div className="rounded-2xl overflow-hidden shadow-lg bg-gray-900 text-white max-w-sm w-full">
@@ -76,10 +78,15 @@ export function SeasonResults({ type }: { type: string }) {
         style={{ backgroundColor: accentColor }}
       >
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest opacity-75">
+          <p
+            className="text-xs font-semibold uppercase tracking-widest"
+            style={{ color: mutedTextOn(accentRgb) }}
+          >
             Your season
           </p>
-          <h2 className="text-2xl font-bold text-gray-900">{season}</h2>
+          <h2 className="text-2xl font-bold" style={{ color: textOn(accentRgb) }}>
+            {season}
+          </h2>
         </div>
         <span className="text-xs font-medium bg-white/30 text-gray-900 px-3 py-1 rounded-full">
           {subSeason}

@@ -13,10 +13,18 @@
   /* Text/button gold: 5.5:1 on white, 4.5:1 on sand, and white on it is 5.5:1.
      Use this anywhere gold carries words or sits behind white content. */
   --color-accent-gold-deep: #915e2c;
-  --color-accent-sage: #87a878;
+  /* Sage carries white button text, so it has to clear 4.5:1 against white.
+     The original #87A878 managed only 2.66:1. */
+  --color-accent-sage: #607f52;
+  --color-accent-sage-dark: #506944;
 
-  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  /* Helvetica by choice, not by accident. The site previously declared
+     Space Grotesk without ever loading it, so every visitor fell through to
+     their browser's default sans-serif — Helvetica on macOS, Arial on
+     Windows, Roboto on Android. Naming the stack keeps the look that was
+     there while making it the same for everyone. */
+  --font-sans: Helvetica, "Helvetica Neue", Arial, sans-serif;
+  --font-display: Helvetica, "Helvetica Neue", Arial, sans-serif;
 }
 
 html {

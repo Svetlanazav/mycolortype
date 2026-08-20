@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { ColorAnalysis } from "../scripts/avrcolorenhanced";
+import { textOn, mutedTextOn } from "../scripts/textOn";
 
 const CATEGORY_LABEL: Record<string, string> = {
   hair: "Hair",
@@ -19,10 +20,6 @@ const CATEGORY_ICON: Record<string, string> = {
 
 function toHex(r: number, g: number, b: number): string {
   return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
-}
-
-function luminance(r: number, g: number, b: number): number {
-  return 0.299 * r + 0.587 * g + 0.114 * b;
 }
 
 function confidenceLabel(pct: number): { text: string; color: string } {
@@ -66,7 +63,7 @@ export function AnalysisResults({ type }: { type: string }) {
   if (status === "idle") {
     return (
       <div className="flex flex-col items-center gap-2 py-4 text-center">
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-400 text-sm">
           Click the photo to see color breakdown
         </p>
       </div>
@@ -98,9 +95,8 @@ export function AnalysisResults({ type }: { type: string }) {
       {colors.map(([key, { color, confidence, shadowPercentage }]) => {
         const { r, g, b } = color;
         const hex = toHex(r, g, b);
-        const lum = luminance(r, g, b);
-        const textColor = lum > 120 ? "#1a1a1a" : "#ffffff";
-        const subTextColor = lum > 120 ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.6)";
+        const textColor = textOn(color);
+        const subTextColor = mutedTextOn(color);
         const confidencePct = Math.round(confidence * 100);
         const { text: confLabel, color: confColor } =
           confidenceLabel(confidencePct);
@@ -136,7 +132,7 @@ export function AnalysisResults({ type }: { type: string }) {
 
               {/* Confidence */}
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-500 w-16 shrink-0 uppercase tracking-wider">
+                <span className="text-[10px] text-gray-400 w-16 shrink-0 uppercase tracking-wider">
                   Confidence
                 </span>
                 <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -163,7 +159,7 @@ export function AnalysisResults({ type }: { type: string }) {
               {/* Shadow */}
               {shadowPct > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-gray-500 w-16 shrink-0 uppercase tracking-wider">
+                  <span className="text-[10px] text-gray-400 w-16 shrink-0 uppercase tracking-wider">
                     Shadow
                   </span>
                   <div className="flex-1 h-1.5 bg-gray-700 rounded-full overflow-hidden">
@@ -172,7 +168,7 @@ export function AnalysisResults({ type }: { type: string }) {
                       style={{ width: `${shadowPct}%` }}
                     />
                   </div>
-                  <span className="text-[10px] text-gray-500 w-14 text-right">
+                  <span className="text-[10px] text-gray-400 w-14 text-right">
                     {shadowPct}%
                   </span>
                 </div>

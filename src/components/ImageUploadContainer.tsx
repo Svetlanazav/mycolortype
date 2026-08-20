@@ -164,7 +164,7 @@ const ImageUploadContainer: React.FC = () => {
                 }}
                 disabled={!isClickable}
                 className={`flex flex-col items-center ${
-                  step === stepNumber ? "text-yellow-600" : "text-gray-300"
+                  step === stepNumber ? "text-accent-gold-deep" : "text-gray-500"
                 } ${
                   isClickable
                     ? "cursor-pointer hover:text-accent-sage"
@@ -300,7 +300,7 @@ const ImageUploadContainer: React.FC = () => {
             <>
               <a
                 href="https://mycolortype.lemonsqueezy.com/buy/d961fc73-eba3-42d0-898f-aa0f25d67d03?embed=1"
-                className="lemonsqueezy-button inline-block px-6 py-2 bg-accent-sage text-white rounded-full hover:bg-accent-rose transition-colors"
+                className="lemonsqueezy-button inline-block px-6 py-2 bg-accent-sage text-white rounded-full hover:bg-accent-sage-dark transition-colors"
               >
                 Buy Personal Color Palette
               </a>
@@ -310,7 +310,7 @@ const ImageUploadContainer: React.FC = () => {
             <>
               <button
                 onClick={() => setShowModal(true)}
-                className="px-6 py-2 bg-accent-sage text-white rounded-full hover:bg-accent-rose transition-colors"
+                className="px-6 py-2 bg-accent-sage text-white rounded-full hover:bg-accent-sage-dark transition-colors"
               >
                 Upload Photo
               </button>
@@ -320,7 +320,7 @@ const ImageUploadContainer: React.FC = () => {
                 }}
                 className={`px-6 py-2 rounded-full transition-colors ${
                   selectedImage && !isStarting
-                    ? "bg-accent-sage  text-white hover:bg-accent-rose"
+                    ? "bg-accent-sage text-white hover:bg-accent-sage-dark"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
                 disabled={!selectedImage || isStarting}
