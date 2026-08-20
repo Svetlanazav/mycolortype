@@ -4,19 +4,36 @@
 
 ## Правила проекта
 
-<!-- Впиши сюда свои правила, например: -->
+## Learning
 
-<!-- ### Стиль кода -->
-<!-- - ... -->
+Track two types of knowledge:
 
-<!-- ### Что нельзя трогать -->
-<!-- - ... -->
+- Domain: what things are (product context, user preferences, APIs, naming conventions, team decisions)
+- Procedural: how to do things (deploy steps, test commands, review flows)
 
-<!-- ### Предпочтения по инструментам -->
-<!-- - ... -->
+Organize knowledge as a hierarchy of .md files:
 
-<!-- ### Деплой и CI -->
-<!-- - ... -->
+- knowledge/INDEX[.]md routes to categories
+- Categories hold the details
+
+Progressive disclosure. Read top-down, only load what you need.
+
+Log errors to knowledge/ERRORS.md. Not every error is a mistake:
+
+- Deterministic errors (bad schema, wrong type, missing field) → conclude immediately
+- Infrastructure errors (timeout, rate limit, network) → log, no conclusion until pattern emerges
+- Conclusions graduate into the relevant domain or procedural file
+
+## Self-Maintenance
+
+Actively manage the knowledge system. This is as important as the current task:
+
+- Review knowledge files at the start of each session
+- Merge overlapping categories
+- Split files that grow too long
+- Remove knowledge that's no longer accurate
+- Create new categories when patterns emerge
+- When you notice something that should be in CLAUDE[.]md but isn't — propose the edit. Don't wait to be asked.
 
 ## For Claude
 
@@ -57,6 +74,7 @@ Always add blank lines around headings and lists:
 
 ```md
 <!-- DO -->
+
 ## Heading
 
 - item
@@ -66,8 +84,11 @@ Always add blank lines around headings and lists:
 - item
 
 <!-- DO NOT -->
+
 ## Heading
+
 - item
+
 ## Next heading
 ```
 
