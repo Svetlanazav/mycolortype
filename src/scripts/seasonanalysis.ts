@@ -157,10 +157,18 @@ function calculateValue(colorValues: ColorValues): "light" | "medium" | "deep" {
 
   // Face skin matters most (50%), body skin adds context (30%), hair least (20%)
   // because hair can be dyed, while skin is inherent.
-  const weightedLightness =
-    faceSkin.colorSpace.lab.l * 0.5 +
-    bodySkin.colorSpace.lab.l * 0.3 +
-    hair.colorSpace.lab.l * 0.2;
+  //
+  // Body skin only counts when the mask actually found skin. On head-and-
+  // shoulders crops it often catches background instead, and a background
+  // lightness dragged the season decision around. When it is unusable its
+  // weight is redistributed over the two reliable channels.
+  const bodySkinUsable = bodySkin.pixelCount > 0 && bodySkin.confidence >= 0.5;
+
+  const weightedLightness = bodySkinUsable
+    ? faceSkin.colorSpace.lab.l * 0.5 +
+      bodySkin.colorSpace.lab.l * 0.3 +
+      hair.colorSpace.lab.l * 0.2
+    : faceSkin.colorSpace.lab.l * 0.71 + hair.colorSpace.lab.l * 0.29;
 
   if (weightedLightness > 65) return "light";
   if (weightedLightness < 45) return "deep";

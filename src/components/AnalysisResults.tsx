@@ -5,12 +5,16 @@ const CATEGORY_LABEL: Record<string, string> = {
   hair: "Hair",
   bodySkin: "Body skin",
   faceSkin: "Face skin",
+  clothes: "Clothes",
+  others: "Other",
 };
 
 const CATEGORY_ICON: Record<string, string> = {
   hair: "✂",
   bodySkin: "🤲",
   faceSkin: "👤",
+  clothes: "👕",
+  others: "◻",
 };
 
 function toHex(r: number, g: number, b: number): string {
@@ -43,9 +47,11 @@ export function AnalysisResults({ type }: { type: string }) {
     function onResult(e: Event) {
       const detail = (e as CustomEvent<Record<string, ColorAnalysis>>).detail;
       setColors(
-        Object.entries(detail).map(
-          ([key, value]) => [key, value] as [string, ColorAnalysis],
-        ),
+        Object.entries(detail)
+          // Categories the segmenter found no pixels for come back as black at
+          // 0% confidence — that is "absent", not a color worth a swatch.
+          .filter(([, value]) => value.pixelCount > 0)
+          .map(([key, value]) => [key, value] as [string, ColorAnalysis]),
       );
       setStatus("done");
     }

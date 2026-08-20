@@ -24,6 +24,8 @@ export interface ColorAnalysis {
   color: RGB;
   confidence: number;
   shadowPercentage: number;
+  /** How many mask pixels this category had. 0 means the category is absent. */
+  pixelCount: number;
   colorSpace: {
     rgb: RGB;
     hsl: HSL;
@@ -177,6 +179,7 @@ function analyzeCategoryColorEnhanced(
       color: { r: 0, g: 0, b: 0 },
       confidence: 0,
       shadowPercentage: 0,
+      pixelCount: 0,
       colorSpace: {
         rgb: { r: 0, g: 0, b: 0 },
         hsl: { h: 0, s: 0, l: 0 },
@@ -218,6 +221,7 @@ function analyzeCategoryColorEnhanced(
     color: selectedColor,
     confidence,
     shadowPercentage,
+    pixelCount: pixels.length,
     colorSpace: {
       rgb: selectedColor,
       hsl: rgbToHSL(selectedColor),
@@ -227,19 +231,35 @@ function analyzeCategoryColorEnhanced(
 }
 
 // Confidence calculation functions
-function calculateSkinConfidence(color: RGB, shadowPercentage: number): number {
-  const hsl = rgbToHSL(color);
-  const inSkinToneRange =
-    hsl.h >= 0 &&
-    hsl.h <= 50 && // Hue range for skin tones
-    hsl.s >= 0.2 &&
-    hsl.s <= 0.6 && // Saturation range for skin
-    hsl.l >= 0.4 &&
-    hsl.l <= 0.8; // Lightness range for skin
 
+/**
+ * Whether a color is a plausible human skin tone.
+ * Hue is the discriminating axis: skin sits in the red-orange-yellow wedge,
+ * so this rejects the blue/violet colors that leak in when the body-skin mask
+ * catches background instead of a neck or shoulder.
+ * Lightness stays wide so deep and very pale complexions both pass.
+ */
+function isSkinTone(color: RGB): boolean {
+  const hsl = rgbToHSL(color);
+  return (
+    hsl.h >= 0 &&
+    hsl.h <= 50 &&
+    hsl.s >= 0.1 &&
+    hsl.s <= 0.7 &&
+    hsl.l >= 0.15 &&
+    hsl.l <= 0.9
+  );
+}
+
+function calculateSkinConfidence(color: RGB, shadowPercentage: number): number {
   const shadowPenalty = shadowPercentage > 30 ? 0.2 : 0;
 
-  return inSkinToneRange ? Math.max(0, Math.min(1, 1 - shadowPenalty)) : 0.5;
+  // A color outside the skin wedge is not a weak reading of skin — it is a
+  // reading of something that is not skin. Score it Low, not Medium, so the
+  // UI stops presenting background as a body-skin swatch.
+  return isSkinTone(color)
+    ? Math.max(0, Math.min(1, 1 - shadowPenalty))
+    : 0.25;
 }
 
 function calculateHairConfidence(color: RGB, shadowPercentage: number): number {
@@ -319,11 +339,18 @@ function findDominantColors(pixels: RGB[], k: number): RGB[] {
 
 function analyzeSkinColor(pixels: RGB[], dominantColors: RGB[]): RGB {
   // Sort by brightness and take the middle cluster to avoid highlights and shadows
-  const sortedByBrightness = dominantColors.sort(
+  const sortedByBrightness = [...dominantColors].sort(
     (a, b) => calculateBrightness(b) - calculateBrightness(a)
   );
 
-  return sortedByBrightness[1] || calculateAverageColor(pixels);
+  // Prefer a cluster that is actually a skin tone. Taking the middle cluster
+  // blindly picks up background whenever the mask is noisy.
+  const skinLike = sortedByBrightness.filter(isSkinTone);
+  if (skinLike.length > 0) {
+    return skinLike[Math.floor(skinLike.length / 2)]!;
+  }
+
+  return sortedByBrightness[1] ?? calculateAverageColor(pixels);
 }
 
 function analyzeHairColor(pixels: RGB[], dominantColors: RGB[]): RGB {

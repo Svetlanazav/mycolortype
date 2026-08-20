@@ -70,7 +70,8 @@ import { FaceColorResults } from "./FaceColorResults";
       <div class="p-6 border-b border-gray-800 flex justify-center">
         <SeasonResults client:only="react" type="img_season" />
       </div>
-      <div class="p-6 border-b border-gray-800 flex justify-center">
+      <!-- Webcam season — only meaningful once the camera is running -->
+      <div class="webcam-only p-6 border-b border-gray-800 justify-center">
         <SeasonResults client:only="react" type="video_season" />
       </div>
 
@@ -81,7 +82,8 @@ import { FaceColorResults } from "./FaceColorResults";
       <div class="p-6 border-b border-gray-800 flex justify-center">
         <AnalysisResults client:only="react" type="img1" />
       </div>
-      <div class="p-6 border-b border-gray-800 flex justify-center">
+      <!-- Webcam color breakdown — only meaningful once the camera is running -->
+      <div class="webcam-only p-6 border-b border-gray-800 justify-center">
         <AnalysisResults client:only="react" type="colors" />
       </div>
 
@@ -110,6 +112,14 @@ import { FaceColorResults } from "./FaceColorResults";
   }
   .segmentOnClick canvas {
     z-index: 1;
+  }
+  /* Webcam-only result panels stay out of the layout until the camera runs,
+     otherwise they sit there forever showing "Click the photo to start". */
+  .webcam-only {
+    display: none;
+  }
+  .webcam-only.shown {
+    display: flex;
   }
 </style>
 
@@ -144,10 +154,13 @@ import { FaceColorResults } from "./FaceColorResults";
     }
   });
 
-  // Toggle webcam section visibility with button
+  // Toggle webcam section — and the result panels that only the camera fills
   const btn = document.getElementById("webcamButton");
   const webcamSection = document.querySelector(".webcam");
   btn?.addEventListener("click", () => {
-    webcamSection?.classList.toggle("hidden");
+    const enabled = webcamSection?.classList.toggle("hidden") === false;
+    for (const panel of document.querySelectorAll(".webcam-only")) {
+      panel.classList.toggle("shown", enabled);
+    }
   });
 </script>
