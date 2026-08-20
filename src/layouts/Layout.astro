@@ -1,25 +1,58 @@
 ---
+import { withBase } from "../scripts/urls";
+import "../styles/global.css";
+
 interface Props {
   title: string;
+  description?: string;
+  /** Social preview image, site-relative (no leading slash needed). */
+  image?: string;
 }
 
-const { title } = Astro.props;
-import "../styles/global.css";
+const {
+  title,
+  description = "Free AI color analysis. Upload a photo and discover your seasonal color palette — processed entirely in your browser, no account needed.",
+  image = "pics/AI_color.jpg",
+} = Astro.props;
+
+const origin = Astro.site ?? Astro.url;
+const canonical = new URL(Astro.url.pathname, origin).href;
+const socialImage = new URL(withBase(image), origin).href;
+const faviconHref = withBase("favicon.svg");
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="description" content="Astro description" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
+
     <title>{title}</title>
-    <!-- <base href={import.meta.env.BASE_URL} /> -->
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={faviconHref} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MyColorType" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={socialImage} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    />
   </head>
   <body class="bg-white font-sans">
     <slot />
   </body>
-  <script></script>
 </html>

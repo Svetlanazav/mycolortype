@@ -2,29 +2,32 @@
 @plugin "@tailwindcss/forms";
 
 @theme {
-  --color-primary-plum: #4A3346;
-  --color-primary-mauve: #9D8189;
-  --color-primary-sand: #F5E6E8;
-  --color-accent-rose: #D4B2BC;
-  --color-accent-gold: #D4A373;
-  --color-accent-sage: #87A878;
+  --color-primary-plum: #4a3346;
+  /* Body-text mauve. Darkened from #9D8189, which only reached 3.5:1 on white
+     and 2.9:1 on sand — below the 4.5:1 WCAG AA needs for normal text. */
+  --color-primary-mauve: #7e626a;
+  --color-primary-sand: #f5e6e8;
+  --color-accent-rose: #d4b2bc;
+  /* Decorative gold — dividers, borders, quote marks. Too light for text. */
+  --color-accent-gold: #d4a373;
+  /* Text/button gold: 5.5:1 on white, 4.5:1 on sand, and white on it is 5.5:1.
+     Use this anywhere gold carries words or sits behind white content. */
+  --color-accent-gold-deep: #915e2c;
+  --color-accent-sage: #87a878;
+
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 
-:root {
-  --accent: 136, 58, 234;
-  --accent-light: 224, 204, 250;
-  --accent-dark: 49, 10, 101;
-  --accent-gradient: linear-gradient(
-    45deg,
-    rgb(var(--accent)),
-    rgb(var(--accent-light)) 30%,
-    white 60%
-  );
-}
 html {
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-sans);
   background: white;
 }
+
+body {
+  font-family: var(--font-sans);
+}
+
 code {
   font-family:
     Menlo,
@@ -37,74 +40,6 @@ code {
     monospace;
 }
 
-/* nav styles */
-.hamburger {
-  padding-right: 20px;
-  padding-left: 10px;
-  cursor: pointer;
-}
-
-.hamburger .line {
-  display: block;
-  width: 40px;
-  height: 5px;
-  margin-bottom: 10px;
-  background-color: #d4afff;
-}
-
-.nav-links {
-  width: 100%;
-  top: 5rem;
-  left: 48px;
-  display: none;
-  margin: 0;
-}
-
-.nav-links a {
-  display: block;
-  text-align: center;
-  padding: 10px 0;
-  text-decoration: none;
-  font-size: 1.1rem;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.nav-links a:hover,
-.nav-links a:focus {
-  border-radius: 5%;
-  background-position: 0;
-  background-color: #23262d;
-}
-
-.expanded {
-  display: unset;
-}
-
-body {
-  font-family: "Space Grotesk", sans-serif;
-}
-
-.custom-shape-divider-bottom-1735495185 {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  overflow: hidden;
-  line-height: 0;
-  transform: rotate(180deg);
-}
-
-.custom-shape-divider-bottom-1735495185 svg {
-  position: relative;
-  display: block;
-  width: calc(101% + 1.3px);
-  height: 82px;
-}
-
-.custom-shape-divider-bottom-1735495185 .shape-fill {
-  fill: #fdf2f8;
-}
 .custom-shape-divider-top-1735495376 {
   position: absolute;
   width: 100%;

@@ -1,6 +1,7 @@
 import React, { useState, useRef, type ChangeEvent } from "react";
 import { Camera, Upload, X } from "lucide-react";
 import { AnalysisPreview } from "./AnalysisPreviewContainer";
+import { storeImageForAnalysis } from "../scripts/compressImage";
 
 // Define types for component state
 type Step = 1 | 2 | 3;
@@ -22,7 +23,7 @@ const Modal: React.FC<ModalProps> = ({
     <div className="bg-white rounded-lg p-6 max-w-md w-full">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-semibold">Select image</h3>
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+        <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
           <X size={24} />
         </button>
       </div>
@@ -61,6 +62,8 @@ const ImageUploadContainer: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
+  const [isStarting, setIsStarting] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -115,10 +118,22 @@ const ImageUploadContainer: React.FC = () => {
     }
   };
 
-  const startAnalysis = (): void => {
-    if (selectedImage) {
-      sessionStorage.setItem("uploadedPhoto", selectedImage);
-      window.location.href = "/mycolortype/analysis";
+  const startAnalysis = async (): Promise<void> => {
+    if (!selectedImage) return;
+
+    setIsStarting(true);
+    setError(null);
+    try {
+      // Photos are downscaled first: a full-size phone photo overflows the
+      // ~5MB sessionStorage quota, and the resulting throw used to leave the
+      // button doing nothing at all.
+      await storeImageForAnalysis("uploadedPhoto", selectedImage);
+      window.location.href = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/analysis`;
+    } catch {
+      setError(
+        "We could not prepare that photo. Please try a different one, or a smaller file.",
+      );
+      setIsStarting(false);
     }
   };
 
@@ -205,8 +220,8 @@ const ImageUploadContainer: React.FC = () => {
                   <div className="mb-4">
                     <Upload size={48} className="mx-auto text-gray-400" />
                   </div>
-                  <p className="text-gray-500 mb-2">Upload or take a photo</p>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-gray-600 mb-2">Upload or take a photo</p>
+                  <p className="text-sm text-gray-600">
                     Supported formats: JPG, PNG
                   </p>
                 </div>
@@ -246,10 +261,10 @@ const ImageUploadContainer: React.FC = () => {
                       <div className="mb-4">
                         <Upload size={48} className="mx-auto text-gray-400" />
                       </div>
-                      <p className="text-gray-500 mb-2">
+                      <p className="text-gray-600 mb-2">
                         Upload or take a photo
                       </p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-gray-600">
                         Supported formats: JPG, PNG
                       </p>
                     </div>
@@ -300,19 +315,27 @@ const ImageUploadContainer: React.FC = () => {
                 Upload Photo
               </button>
               <button
-                onClick={startAnalysis}
+                onClick={() => {
+                  void startAnalysis();
+                }}
                 className={`px-6 py-2 rounded-full transition-colors ${
-                  selectedImage
+                  selectedImage && !isStarting
                     ? "bg-accent-sage  text-white hover:bg-accent-rose"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
-                disabled={!selectedImage}
+                disabled={!selectedImage || isStarting}
               >
-                Start Analysis
+                {isStarting ? "Preparing…" : "Start Analysis"}
               </button>
             </>
           )}
         </div>
+
+        {error && (
+          <p role="alert" className="mt-4 text-center text-sm text-red-600">
+            {error}
+          </p>
+        )}
 
         {/* Upload modal */}
         {showModal && (
