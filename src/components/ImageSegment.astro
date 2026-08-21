@@ -3,6 +3,12 @@ import { AnalysisResults } from "./AnalysisResults";
 import { SeasonResults } from "./SeasonResults";
 import { SeasonPaletteResults } from "./SeasonPaletteResults";
 import { FaceColorResults } from "./FaceColorResults";
+import { withBase } from "../scripts/urls";
+
+// Sample subject for the demo analysis. Served from our own assets: this used
+// to hotlink a press photo from another site, which could vanish at any time
+// and was not ours to publish.
+const samplePortrait = withBase("pics/sample-portrait.jpg");
 ---
 
 <div class="min-h-screen bg-gray-950 text-white">
@@ -28,8 +34,10 @@ import { FaceColorResults } from "./FaceColorResults";
         <div class="segmentOnClick w-full max-w-md relative cursor-pointer group">
           <canvas class="removed absolute inset-0 w-full h-full object-contain rounded-xl"></canvas>
           <img
-            src="https://static.independent.co.uk/s3fs-public/thumbnails/image/2013/01/09/23/v3-pg-12-blue-eyes-rex.jpg"
-            crossorigin="anonymous"
+            src={samplePortrait}
+            alt="Sample portrait — click to run the colour analysis on it"
+            width="880"
+            height="1006"
             title="Click to analyse"
             class="w-full rounded-xl shadow-lg group-hover:opacity-90 transition-opacity"
           />
@@ -132,7 +140,6 @@ import { FaceColorResults } from "./FaceColorResults";
     const img = document.querySelector(".segmentOnClick img") as HTMLImageElement | null;
     if (img) {
       img.src = uploaded;
-      img.removeAttribute("crossorigin");
     }
     sessionStorage.removeItem("uploadedPhoto");
   }
@@ -146,7 +153,6 @@ import { FaceColorResults } from "./FaceColorResults";
     const img = document.querySelector(".segmentOnClick img") as HTMLImageElement | null;
     if (img) {
       img.src = url;
-      img.removeAttribute("crossorigin");
       img.style.opacity = "1";
       // reset canvas so old result disappears
       const canvas = img.closest(".segmentOnClick")?.querySelector("canvas");

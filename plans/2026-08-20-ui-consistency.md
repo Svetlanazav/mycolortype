@@ -98,6 +98,45 @@ come up in this file.
 Contrast after the change: plum on the sand gradient and gold-deep for the CTA
 both clear AA, and the landing page still audits clean.
 
+## Pre-publish cleanup
+
+Blockers found while checking whether the site could go live on GitHub Pages.
+
+**Every Pages deploy had been failing.** `status: null` on the Pages API and 5
+of 5 workflow runs failed, going back to March. The cause: the workflow pins
+`node-version: "20"`, and Astro 6's CLI hard-codes `const engines = ">=22.12.0"`
+in `astro/bin/astro.mjs` — stricter than the `^20.19.1 || >=22.12.0` in its own
+`package.json`, so Node 20 is refused regardless of the lockfile. Broke at the
+March Astro 4 → 6 upgrade. Bumped to `node-version: "22"`.
+
+**Two images were hotlinked from other sites.** The analysis page pulled its
+sample portrait from `static.independent.co.uk` (a press photo, also sitting in
+`src/tests/fixtures/blue-eyes-test.jpg`), and `AnalysisPreviewContainer` pulled a
+thumbnail from `i.pinimg.com`. Both could vanish without warning and neither was
+ours to publish.
+
+- The sample portrait is now `public/pics/sample-portrait.jpg`, cropped from the
+  project's own Freepik asset and framed tight on the face so the rainbow
+  backdrop stops feeding the segmenter. Verified the analysis still runs on it
+  (Soft Autumn, hair #9a6f51, face skin #c18e7e).
+- The Pinterest thumbnail became a 3x3 tile built from the season's own primary
+  colors. It was the same picture for every season and captioned "Spring"
+  regardless, so it never described the result anyway.
+- The sample image is same-origin now, so the `crossorigin` attribute and the
+  two `removeAttribute("crossorigin")` calls that existed only to work around it
+  are gone. The image also had no `alt` at all; it has one now.
+
+Nothing external is fetched for presentation any more — the only remaining
+third-party hosts are the ML model CDNs and the Lemon Squeezy checkout script.
+
+**Testimonials are no longer rendered.** The two entries carry invented names,
+job titles, star ratings and stock-photo avatars. `Comments.astro` is untouched
+and the section can be restored in three edits (documented at the removal site);
+the "Reviews" nav link came out with it so no anchor dangles.
+
+Verified on the production build via `npm run preview`: no failed requests, no
+dead anchors, all four pages render.
+
 ## Known residuals
 
 Both are visual-design calls rather than defects, so they were left for a

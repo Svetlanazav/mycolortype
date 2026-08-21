@@ -60,12 +60,24 @@ export const AnalysisPreview: React.FC<AnalysisContainerProps> = ({
               </h2>
               <p className="text-gray-600 leading-relaxed">{description}</p>
             </div>
+            {/* A tile built from the season's own colors. This used to hotlink
+                a Pinterest thumbnail that was the same picture for every season
+                (and was captioned "Spring" regardless), so it said nothing about
+                the result and could disappear without warning. */}
             <div className="mt-6 md:mt-0">
-              <img
-                src="https://i.pinimg.com/236x/84/51/df/8451df4c3d69ee6555f60a4ca042ae95.jpg"
-                alt="Spring season style representation"
-                className="w-60 h-60 object-cover rounded-lg shadow-md"
-              />
+              <div
+                className="w-60 h-60 grid grid-cols-3 grid-rows-3 overflow-hidden rounded-lg shadow-md"
+                role="img"
+                aria-label={`Colour tile representing the ${seasonalStyle} palette`}
+              >
+                {primaryColors.slice(0, 9).map((color) => (
+                  <div
+                    key={color.hex}
+                    style={{ backgroundColor: color.hex }}
+                    title={color.name}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -1,6 +1,5 @@
 ---
 import ImageUploadContainer from "../components/ImageUploadContainer";
-import CommentSection from "../components/Comments.astro";
 import { withBase } from "../scripts/urls";
 
 const homeHref = withBase("");
@@ -38,9 +37,6 @@ const blogHref = withBase("blog");
           <li><a href="#features" class="nav-link">Features</a></li>
           <li>
             <a href={blogHref} class="nav-link">Blog</a>
-          </li>
-          <li>
-            <a href="#testimonials" class="nav-link">Reviews</a>
           </li>
         </ul>
 
@@ -507,7 +503,13 @@ const blogHref = withBase("blog");
   </div>
 </section>
 
-<CommentSection />
+<!-- Testimonials are not rendered. The two entries in Comments.astro carry
+     invented names, job titles, star ratings and stock-photo avatars; publishing
+     those as genuine customer reviews is not something to ship by accident.
+     The component is intact — restore this section by re-adding
+     `import CommentSection from "../components/Comments.astro";` above, putting
+     `<CommentSection />` back here, and restoring the "Reviews" nav link — once
+     the quotes are real. -->
 
 <!-- FAQ -->
 <section class="py-16 px-4 bg-white">

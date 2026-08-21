@@ -57,7 +57,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # Astro 6's CLI hard-requires >=22.12.0 (see astro/bin/astro.mjs),
+          # which is stricter than the engines field in its package.json.
+          # Node 20 made every Pages deploy fail since the Astro 6 upgrade.
+          node-version: "22"
           cache: ${{ steps.detect-package-manager.outputs.manager }}
           cache-dependency-path: ${{ env.BUILD_PATH }}/${{ steps.detect-package-manager.outputs.lockfile }}
       - name: Setup Pages
